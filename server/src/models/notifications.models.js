@@ -30,7 +30,7 @@ const notificationSchema = new Schema(
       default: Date.now,
     },
   },
-  { timestamps: true, strict: false },
+  { timestamps: true, strict: false }
 );
 
 export const Notification = mongoose.model("Notification", notificationSchema);

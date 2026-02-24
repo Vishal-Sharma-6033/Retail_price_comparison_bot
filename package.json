@@ -11,7 +11,8 @@
     "start": "npm --workspace server run start"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^8.2.2",
+    "prettier": "^3.8.1"
   },
   "repository": {
     "type": "git",
