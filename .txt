@@ -1,0 +1,81 @@
+📌 1️⃣ Create Project Folder
+mkdir retail-price-comparison-bot
+cd retail-price-comparison-bot
+
+📌 2️⃣ Initialize Root Project
+npm init -y
+
+📌 3️⃣ Create Client & Server Folders
+mkdir client
+mkdir server
+
+📌 4️⃣ Setup React Frontend (Vite)
+cd client
+npm create vite@latest .
+
+When asked:
+Project name → press Enter
+Framework → React
+Variant → JavaScript
+Use Vite 8 beta? → NO
+Then install dependencies:
+npm install
+
+📌 5️⃣ Setup Backend (Node + Express)
+cd ../server
+npm init -y
+
+Install required packages:
+npm install express cors dotenv
+Install dev dependency:
+npm install nodemon --save-dev
+
+📌 6️⃣ Install Concurrently (Root Folder)
+Go back to root:
+cd ..
+npm install concurrently --save-dev
+
+📌 7️⃣ Add Workspaces in Root package.json
+(Manual step — edit file)
+Add:
+"workspaces": [
+  "client",
+  "server"
+]
+
+📌 8️⃣ Run Full Project (Client + Server Together)
+npm run dev
+
+📌 9️⃣ Build Frontend (Production)
+npm run build
+
+📌 🔟 Start Backend in Production Mode
+npm start
+
+📌 Extra Useful Commands
+🔹 Install Axios in Client
+cd client
+npm install axios
+🔹 Install Mongoose in Server
+cd server
+npm install mongoose
+🔹 Install JWT + Bcrypt
+npm install jsonwebtoken bcrypt
+
+🎯 Final Structure Should Be
+retail-price-comparison-bot/
+│
+├── client/   (React + Vite)
+├── server/   (Node + Express)
+└── package.json  (Root Controller)
+
+🚀 What You Learned
+npm init -y → create package.json
+npm install → install dependencies
+--save-dev → development only packages
+concurrently → run client + server together
+nodemon → auto restart backend
+vite → fast React dev server
+
+
+

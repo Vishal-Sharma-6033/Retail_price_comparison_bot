@@ -1,0 +1,28 @@
+{
+  "name": "retail-price-comparison-bot",
+  "private": true,
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm --workspace server run dev\" \"npm --workspace client run dev\"",
+    "build": "npm --workspace client run build",
+    "start": "npm --workspace server run start"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Vishal-Sharma-6033/Retail_price_comparison_bot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Vishal-Sharma-6033/Retail_price_comparison_bot/issues"
+  },
+  "homepage": "https://github.com/Vishal-Sharma-6033/Retail_price_comparison_bot#readme",
+  "description": ""
+}
