@@ -3,16 +3,12 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { notFound, errorHandler } from "./middlewares/errorhandlers.middlewares.js";
-import userRoutes from "./routes/auth.routes.js";
+import authRoute from "./routes/auth.routes.js";
 import  NotificationRoutes  from "./routes/notifications.routes.js";
+import userRouter from "./routes/user.routes.js";
 
 const app = express();
 
-// Middleware
-// app.use(cors({
-//     origin:process.env.CORS_ORIGIN,
-//     credentials:true
-// }))
 app.use(cors());
 app.use(helmet());
 app.use(morgan("dev"));
@@ -25,8 +21,9 @@ app.get("/api/health", (req, res) => {
 });
 
 // Routes
-app.use("/api/user",userRoutes );
+app.use("/api/user",authRoute );
 app.use("/api/notifications", NotificationRoutes);
+app.use("/api/profile", userRouter);
 
 // Error handlers (must be last)
 app.use(notFound);

@@ -2,6 +2,14 @@ import dotenv from 'dotenv';
 import connectDB from './config/db.js';
 import {app} from './app.js';
 
+// Import all models to register them
+import { User } from './models/user.models.js';
+import { Product } from './models/product.models.js';
+import { Shop } from './models/shop.models.js';
+import { Notification } from './models/notifications.models.js';
+import { PriceListing } from './models/priceListing.models.js';
+import { PriceHistory } from './models/pricehistory.models.js';
+
 dotenv.config({
     path: '.env'
 });
