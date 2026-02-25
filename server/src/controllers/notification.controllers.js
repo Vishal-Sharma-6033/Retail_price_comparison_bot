@@ -30,4 +30,5 @@ const markRead=async(req, res, next)=>{
  }
 }
 
+
 export {listNotifications, markRead}
