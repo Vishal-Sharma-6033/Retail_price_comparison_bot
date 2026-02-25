@@ -3,7 +3,8 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { notFound, errorHandler } from "./middlewares/errorhandlers.middlewares.js";
-import userRoutes from "./routes/user.routes.js";
+import userRoutes from "./routes/auth.routes.js";
+import  NotificationRoutes  from "./routes/notifications.routes.js";
 
 const app = express();
 
@@ -25,6 +26,7 @@ app.get("/api/health", (req, res) => {
 
 // Routes
 app.use("/api/user",userRoutes );
+app.use("/api/notifications", NotificationRoutes);
 
 // Error handlers (must be last)
 app.use(notFound);
