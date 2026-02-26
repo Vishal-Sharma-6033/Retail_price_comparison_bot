@@ -6,6 +6,7 @@ import { notFound, errorHandler } from "./middlewares/errorhandlers.middlewares.
 import authRoute from "./routes/auth.routes.js";
 import  NotificationRoutes  from "./routes/notifications.routes.js";
 import userRouter from "./routes/user.routes.js";
+import shopRouter from "./routes/shop.routes.js";
 
 const app = express();
 
@@ -24,7 +25,7 @@ app.get("/api/health", (req, res) => {
 app.use("/api/user",authRoute );
 app.use("/api/notifications", NotificationRoutes);
 app.use("/api/profile", userRouter);
-
+app.use("/api/shops", shopRouter);
 // Error handlers (must be last)
 app.use(notFound);
 app.use(errorHandler);
