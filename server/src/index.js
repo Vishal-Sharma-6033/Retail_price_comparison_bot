@@ -1,4 +1,4 @@
-import dotenv from 'dotenv';
+import "dotenv/config";
 import connectDB from './config/db.js';
 import {app} from './app.js';
 
@@ -9,10 +9,6 @@ import { Shop } from './models/shop.models.js';
 import { Notification } from './models/notifications.models.js';
 import { PriceListing } from './models/priceListing.models.js';
 import { PriceHistory } from './models/pricehistory.models.js';
-
-dotenv.config({
-    path: '.env'
-});
 
 const port = process.env.PORT || 5000;
 // Connect to MongoDB
