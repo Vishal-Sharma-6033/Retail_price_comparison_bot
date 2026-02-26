@@ -298,6 +298,98 @@ label {
   color: var(--muted);
 }
 
+.profile-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.info-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 600;
+  min-width: 80px;
+  color: var(--muted);
+}
+
+.watchlist-items {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.watchlist-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  background: rgba(11, 114, 133, 0.04);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.watchlist-item:hover {
+  background: rgba(11, 114, 133, 0.08);
+}
+
+.watchlist-product {
+  flex: 1;
+}
+
+.product-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.product-meta {
+  font-size: 0.9rem;
+}
+
+.watchlist-price {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.price-amount {
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 1.1rem;
+}
+
+.price-shop {
+  font-size: 0.85rem;
+}
+
+.table-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ghost-btn.watched {
+  background: rgba(11, 114, 133, 0.12);
+  color: var(--teal);
+  cursor: default;
+}
+
+.ghost-btn.watched:hover {
+  background: rgba(11, 114, 133, 0.12);
+  transform: none;
+}
+
 @media (max-width: 900px) {
   .hero {
     flex-direction: column;

@@ -1,16 +1,19 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext.jsx";
 import SearchBar from "../components/SearchBar.jsx";
 import ComparisonTable from "../components/ComparisonTable.jsx";
 import ChatbotPanel from "../components/ChatbotPanel.jsx";
 import PriceTrendChart from "../components/PriceTrendChart.jsx";
-import { chatbotApi, priceApi, productApi, shopApi } from "../api/client.js";
+import { chatbotApi, priceApi, productApi, shopApi, userApi } from "../api/client.js";
 
 const Home = () => {
+  const { user } = useAuth();
   const [results, setResults] = useState([]);
   const [history, setHistory] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [messages, setMessages] = useState([]);
   const [coords, setCoords] = useState(null);
+  const [watchlistIds, setWatchlistIds] = useState([]);
 
   const handleUseLocation = () => {
     if (!navigator.geolocation) {
@@ -76,6 +79,36 @@ const Home = () => {
     }
   };
 
+  const handleAddToWatchlist = async (productId) => {
+    if (!user) {
+      alert("Please login to add products to your watchlist.");
+      return;
+    }
+
+    try {
+      await userApi.addWatch({ productId });
+      setWatchlistIds((prev) => [...prev, productId]);
+    } catch (error) {
+      console.error("Failed to add to watchlist:", error);
+      alert("Failed to add to watchlist. Please try again.");
+    }
+  };
+
+  useEffect(() => {
+    const loadWatchlist = async () => {
+      if (!user) return;
+      try {
+        const response = await userApi.watchlist();
+        const ids = (response.data.watchlist || []).map((p) => p._id);
+        setWatchlistIds(ids);
+      } catch (error) {
+        console.error("Failed to load watchlist:", error);
+      }
+    };
+
+    loadWatchlist();
+  }, [user]);
+
   return (
     <section className="page">
       <div className="hero">
@@ -91,7 +124,12 @@ const Home = () => {
         </div>
       </div>
       <div className="grid">
-        <ComparisonTable results={results} onSelect={handleSelectProduct} />
+        <ComparisonTable
+          results={results}
+          onSelect={handleSelectProduct}
+          onAddToWatchlist={user ? handleAddToWatchlist : null}
+          watchlistIds={watchlistIds}
+        />
         <PriceTrendChart history={history} product={selectedProduct} />
       </div>
       <div className="grid">
@@ -99,8 +137,9 @@ const Home = () => {
         <div className="card insight">
           <div className="card-title">Insights</div>
           <p>
-            Track price drops by adding products to your watchlist in your profile once the
-            UI is connected to your account.
+            {user
+              ? `Track price drops by adding products to your watchlist. You have ${watchlistIds.length} product${watchlistIds.length === 1 ? "" : "s"} in your watchlist. Visit your profile to manage them.`
+              : "Login to track price drops by adding products to your watchlist. Get notified when prices change on your favorite items."}
           </p>
         </div>
       </div>

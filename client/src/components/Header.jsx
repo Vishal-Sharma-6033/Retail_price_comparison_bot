@@ -11,6 +11,7 @@ const Header = () => {
       </Link>
       <nav className="nav-links">
         <NavLink to="/">Search</NavLink>
+        {user && <NavLink to="/profile">Profile</NavLink>}
         {user?.role === "shopkeeper" || user?.role === "admin" ? (
           <NavLink to="/dashboard">Dashboard</NavLink>
         ) : null}

@@ -1,4 +1,4 @@
-const ComparisonTable = ({ results, onSelect }) => (
+const ComparisonTable = ({ results, onSelect, onAddToWatchlist, watchlistIds = [] }) => (
   <div className="card">
     <div className="card-title">Price Comparison</div>
     {results.length === 0 ? (
@@ -14,20 +14,35 @@ const ComparisonTable = ({ results, onSelect }) => (
           </tr>
         </thead>
         <tbody>
-          {results.map((item) => (
-            <tr key={item.product._id}>
-              <td>{item.product.name}</td>
-              <td>
-                {item.bestPrice} {item.currency}
-              </td>
-              <td>{item.shop?.name || "-"}</td>
-              <td>
-                <button className="ghost-btn" type="button" onClick={() => onSelect(item.product)}>
-                  View Trend
-                </button>
-              </td>
-            </tr>
-          ))}
+          {results.map((item) => {
+            const isWatched = watchlistIds.includes(item.product._id);
+            return (
+              <tr key={item.product._id}>
+                <td>{item.product.name}</td>
+                <td>
+                  {item.bestPrice} {item.currency}
+                </td>
+                <td>{item.shop?.name || "-"}</td>
+                <td>
+                  <div className="table-actions">
+                    <button className="ghost-btn" type="button" onClick={() => onSelect(item.product)}>
+                      View Trend
+                    </button>
+                    {onAddToWatchlist && (
+                      <button
+                        className={isWatched ? "ghost-btn watched" : "ghost-btn"}
+                        type="button"
+                        onClick={() => onAddToWatchlist(item.product._id)}
+                        disabled={isWatched}
+                      >
+                        {isWatched ? "Watched" : "Watch"}
+                      </button>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     )}
