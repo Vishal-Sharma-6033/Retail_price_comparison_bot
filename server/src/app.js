@@ -9,6 +9,7 @@ import userRouter from "./routes/user.routes.js";
 import shopRouter from "./routes/shop.routes.js";
 import productRoute from "./routes/product.routes.js";
 import priceRoute from "./routes/price.routes.js";
+import chatbotRoute from "./routes/chatbot.routes.js";
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use("/api/profile", userRouter);
 app.use("/api/shops", shopRouter);
 app.use("/api/products", productRoute);
 app.use("/api/prices", priceRoute);
+app.use("/api/chatbot", chatbotRoute);
 // Error handlers (must be last)
 app.use(notFound);
 app.use(errorHandler);
