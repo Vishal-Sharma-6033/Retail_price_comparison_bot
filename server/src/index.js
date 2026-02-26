@@ -1,28 +1,50 @@
-import "dotenv/config";
-import connectDB from './config/db.js';
-import {app} from './app.js';
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const helmet = require("helmet");
+const { connectDb } = require("./config/db");
+const { notFound, errorHandler } = require("./middleware/errorHandler");
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+const shopRoutes = require("./routes/shopRoutes");
+const productRoutes = require("./routes/productRoutes");
+const priceRoutes = require("./routes/priceRoutes");
+const chatbotRoutes = require("./routes/chatbotRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
-// Import all models to register them
-import { User } from './models/user.models.js';
-import { Product } from './models/product.models.js';
-import { Shop } from './models/shop.models.js';
-import { Notification } from './models/notifications.models.js';
-import { PriceListing } from './models/priceListing.models.js';
-import { PriceHistory } from './models/pricehistory.models.js';
+require("dotenv").config();
+
+const app = express();
+
+app.use(helmet());
+app.use(cors());
+app.use(express.json({ limit: "1mb" }));
+app.use(morgan("dev"));
+
+app.get("/api/health", (req, res) => {
+  res.json({ status: "ok" });
+});
+
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/shops", shopRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/prices", priceRoutes);
+app.use("/api/chatbot", chatbotRoutes);
+app.use("/api/notifications", notificationRoutes);
+
+app.use(notFound);
+app.use(errorHandler);
 
 const port = process.env.PORT || 5000;
-// Connect to MongoDB
-connectDB()
-.then(()=>{
-    app.listen(port,()=>{
-        console.log(`Server is running on port ${port}`);
-    })
-    app.on("error",(error)=>{
-            console.error("Error in Express app:",error);
-            throw error;
-        })
-})
-.catch((err)=>{
-    console.log("Error in connecting to DB:",err)
-})
 
+connectDb()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Server running on port ${port}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to connect to database", error);
+    process.exit(1);
+  });
