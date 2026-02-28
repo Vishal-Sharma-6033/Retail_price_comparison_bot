@@ -15,18 +15,51 @@ const Home = () => {
   const [messages, setMessages] = useState([]);
   const [coords, setCoords] = useState(null);
   const [watchlistIds, setWatchlistIds] = useState([]);
+  const [locationStatus, setLocationStatus] = useState("");
 
   const handleUseLocation = () => {
     if (!navigator.geolocation) {
+      alert("Geolocation is not supported by your browser");
       return;
     }
 
-    navigator.geolocation.getCurrentPosition((position) => {
-      setCoords({
-        lat: position.coords.latitude,
-        lng: position.coords.longitude
-      });
-    });
+    setLocationStatus("Getting your location...");
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const newCoords = {
+          lat: position.coords.latitude,
+          lng: position.coords.longitude
+        };
+        setCoords(newCoords);
+        setLocationStatus(`Location acquired: ${newCoords.lat.toFixed(4)}, ${newCoords.lng.toFixed(4)}`);
+        setTimeout(() => setLocationStatus(""), 3000);
+      },
+      (error) => {
+        let errorMsg = "Unable to get your location. ";
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMsg += "Please allow location access in your browser settings.";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMsg += "Location information is unavailable.";
+            break;
+          case error.TIMEOUT:
+            errorMsg += "Location request timed out.";
+            break;
+          default:
+            errorMsg += "An unknown error occurred.";
+        }
+        setLocationStatus(errorMsg);
+        alert(errorMsg);
+        setTimeout(() => setLocationStatus(""), 5000);
+      },
+      {
+        timeout: 10000,
+        enableHighAccuracy: true,
+        maximumAge: 0
+      }
+    );
   };
 
   const resolveCoordinates = async (address) => {
@@ -123,7 +156,7 @@ const Home = () => {
           </p>
         </div>
         <div className="hero-panel">
-          <SearchBar onSearch={handleSearch} onUseLocation={handleUseLocation} />
+          <SearchBar onSearch={handleSearch} onUseLocation={handleUseLocation} locationStatus={locationStatus} />
         </div>
       </div>
       <div className="grid">
