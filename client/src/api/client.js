@@ -28,6 +28,7 @@ export const shopApi = {
   nearby: (query) => api.get("/shops/nearby", { params: query }),
   myShops: () => api.get("/shops/mine"),
   create: (payload) => api.post("/shops", payload),
+  delete: (shopId) => api.delete(`/shops/${shopId}`),
   geocode: (query) => api.get("/shops/geocode", { params: query })
 };
 

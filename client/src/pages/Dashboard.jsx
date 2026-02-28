@@ -37,6 +37,18 @@ const Dashboard = () => {
     setMessage("Shop created.");
   };
 
+  const handleDeleteShop = async (shopId) => {
+    if (!confirm("Are you sure you want to delete this shop?")) return;
+    try {
+      setMessage("");
+      await shopApi.delete(shopId);
+      setShops((prev) => prev.filter((shop) => shop._id !== shopId));
+      setMessage("Shop deleted successfully.");
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Failed to delete shop.");
+    }
+  };
+
   const handleCreateProduct = async (event) => {
     event.preventDefault();
     setMessage("");
@@ -199,6 +211,42 @@ const Dashboard = () => {
             </button>
           </form>
         </div>
+      </div>
+      <div className="card">
+        <div className="card-title">My Shops</div>
+        {shops.length === 0 ? (
+          <p>No shops yet. Create your first shop above.</p>
+        ) : (
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Address</th>
+                  <th>Phone</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {shops.map((shop) => (
+                  <tr key={shop._id}>
+                    <td>{shop.name}</td>
+                    <td>{shop.address || "—"}</td>
+                    <td>{shop.phone || "—"}</td>
+                    <td>
+                      <button
+                        className="danger-btn"
+                        onClick={() => handleDeleteShop(shop._id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </section>
   );

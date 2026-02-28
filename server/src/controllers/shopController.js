@@ -84,4 +84,24 @@ const geocodeAddress = async (req, res, next) => {
   }
 };
 
-module.exports = { createShop, getNearbyShops, getMyShops, geocodeAddress };
+const deleteShop = async (req, res, next) => {
+  try {
+    const { shopId } = req.params;
+
+    const shop = await Shop.findById(shopId);
+    if (!shop) {
+      return res.status(404).json({ message: "Shop not found" });
+    }
+
+    if (shop.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "You can only delete your own shops" });
+    }
+
+    await Shop.findByIdAndDelete(shopId);
+    return res.json({ message: "Shop deleted successfully" });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = { createShop, getNearbyShops, getMyShops, geocodeAddress, deleteShop };

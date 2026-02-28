@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const SearchBar = ({ onSearch, onUseLocation }) => {
+const SearchBar = ({ onSearch, onUseLocation, locationStatus }) => {
   const [query, setQuery] = useState("");
   const [address, setAddress] = useState("");
 
@@ -31,9 +31,14 @@ const SearchBar = ({ onSearch, onUseLocation }) => {
           onChange={(event) => setAddress(event.target.value)}
         />
         <button className="ghost-btn" type="button" onClick={onUseLocation}>
-          Use my location
+          📍 Use my location
         </button>
       </div>
+      {locationStatus && (
+        <div className="location-status">
+          {locationStatus.includes("acquired") ? "✅" : locationStatus.includes("Getting") ? "🔄" : "⚠️"} {locationStatus}
+        </div>
+      )}
     </form>
   );
 };
