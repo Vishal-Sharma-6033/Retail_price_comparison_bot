@@ -1,16 +1,27 @@
 {
-  "name": "retail-price-comparison-bot",
-  "private": true,
-  "workspaces": [
-    "client",
-    "server"
-  ],
+  "name": "retail-price-comparison-bot-server",
+  "version": "1.0.0",
+  "type": "commonjs",
+  "main": "server/src/index.js",
   "scripts": {
-    "dev": "concurrently \"npm --workspace server run dev\" \"npm --workspace client run dev\"",
-    "build": "npm --workspace client run build",
-    "start": "npm --workspace server run start"
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev:server": "nodemon --watch server/src --ext js,json server/src/index.js",
+    "dev:client": "npm run dev --prefix client",
+    "start": "node server/src/index.js",
+    "build": "npm run build --prefix client"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "helmet": "^7.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.5.4",
+    "morgan": "^1.10.0"
   },
   "devDependencies": {
-    "concurrently": "^8.2.2"
+    "concurrently": "^9.0.1",
+    "nodemon": "^3.1.4"
   }
 }

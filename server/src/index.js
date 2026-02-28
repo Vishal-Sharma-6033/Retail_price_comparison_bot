@@ -11,10 +11,12 @@ const productRoutes = require("./routes/productRoutes");
 const priceRoutes = require("./routes/priceRoutes");
 const chatbotRoutes = require("./routes/chatbotRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const path = require("path");
 
 require("dotenv").config();
 
 const app = express();
+const clientDistPath = path.resolve(__dirname, "../../client/dist");
 
 app.use(helmet());
 app.use(cors());
@@ -55,22 +57,41 @@ app.use("/api/notifications", notificationRoutes);
 
 app.use(notFound);
 app.use(errorHandler);
+app.use(express.static(clientDistPath));
+app.get("*", (_, res) => {
+  res.sendFile(path.join(clientDistPath, "index.html"));
+});
 
 // Only start server if not in serverless environment
-if (process.env.NODE_ENV !== "production" || process.env.VERCEL !== "1") {
-  const port = process.env.PORT || 5000;
-  connectDb()
-    .then(() => {
-      dbConnected = true;
-      app.listen(port, () => {
-        console.log(`Server running on port ${port}`);
-      });
-    })
-    .catch((error) => {
-      console.error("Failed to connect to database", error);
-      process.exit(1);
+// if (process.env.NODE_ENV !== "production" || process.env.VERCEL !== "1") {
+//   const port = process.env.PORT || 5000;
+//   connectDb()
+//     .then(() => {
+//       dbConnected = true;
+//       app.listen(port, () => {
+//         console.log(`Server running on port ${port}`);
+//       });
+//     })
+//     .catch((error) => {
+//       console.error("Failed to connect to database", error);
+//       process.exit(1);
+//     });
+// }
+const port = process.env.PORT || 5000;
+// Connect to MongoDB
+connectDb()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Server is running on port ${port}`);
     });
-}
+    app.on("error", (error) => {
+      console.error("Error in Express app:", error);
+      throw error;
+    });
+  })
+  .catch((err) => {
+    console.log("Error in connecting to DB:", err);
+  });
 
 // Export for Vercel serverless
 module.exports = app;
