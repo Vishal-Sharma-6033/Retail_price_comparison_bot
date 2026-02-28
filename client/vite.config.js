@@ -7,7 +7,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/api": {
-        target: "http://localhost:5000",
+        target: "https://retail-price-comparison-bot.onrender.com",
         changeOrigin: true,
         rewrite: (path) => path
       }
@@ -19,7 +19,7 @@ export default defineConfig({
   },
   define: {
     "process.env.VITE_API_URL": JSON.stringify(
-      process.env.VITE_API_URL || "http://localhost:5000"
+      process.env.VITE_API_URL || "https://retail-price-comparison-bot.onrender.com"
     )
   }
 });
