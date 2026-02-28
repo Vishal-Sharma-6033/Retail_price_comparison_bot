@@ -390,6 +390,33 @@ label {
   transform: none;
 }
 
+.analytics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.analytics-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.analytics-label {
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.analytics-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
 @media (max-width: 900px) {
   .hero {
     flex-direction: column;

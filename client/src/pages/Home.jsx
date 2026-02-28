@@ -10,6 +10,7 @@ const Home = () => {
   const { user } = useAuth();
   const [results, setResults] = useState([]);
   const [history, setHistory] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [messages, setMessages] = useState([]);
   const [coords, setCoords] = useState(null);
@@ -51,6 +52,7 @@ const Home = () => {
           setSelectedProduct(response.data.results[0].product);
           const historyResponse = await priceApi.history(response.data.results[0].product._id);
           setHistory(historyResponse.data.history || []);
+          setAnalytics(historyResponse.data.analytics || null);
         }
       } catch (error) {
         setResults([]);
@@ -63,6 +65,7 @@ const Home = () => {
     setSelectedProduct(product);
     const response = await priceApi.history(product._id);
     setHistory(response.data.history || []);
+    setAnalytics(response.data.analytics || null);
   };
 
   const handleChatSend = async (text) => {
@@ -130,7 +133,7 @@ const Home = () => {
           onAddToWatchlist={user ? handleAddToWatchlist : null}
           watchlistIds={watchlistIds}
         />
-        <PriceTrendChart history={history} product={selectedProduct} />
+        <PriceTrendChart history={history} product={selectedProduct} analytics={analytics} />
       </div>
       <div className="grid">
         <ChatbotPanel messages={messages} onSend={handleChatSend} />

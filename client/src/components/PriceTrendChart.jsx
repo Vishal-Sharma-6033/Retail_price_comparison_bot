@@ -11,7 +11,7 @@ import {
 
 ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
 
-const PriceTrendChart = ({ history, product }) => {
+const PriceTrendChart = ({ history, product, analytics }) => {
   if (!product) {
     return (
       <div className="card">
@@ -40,9 +40,53 @@ const PriceTrendChart = ({ history, product }) => {
     plugins: { legend: { display: false } }
   };
 
+  const trendIcon = {
+    rising: "📈",
+    declining: "📉",
+    neutral: "➡️"
+  };
+
+  const getTrendColor = (trend) => {
+    if (trend === "rising") return "#d9480f";
+    if (trend === "declining") return "#087e8b";
+    return "#666";
+  };
+
   return (
     <div className="card chart-card">
       <div className="card-title">Price Trend</div>
+      {analytics && (
+        <div className="analytics-grid">
+          <div className="analytics-item">
+            <div className="analytics-label">Current Price</div>
+            <div className="analytics-value">${analytics.currentPrice?.toFixed(2)}</div>
+          </div>
+          <div className="analytics-item">
+            <div className="analytics-label">Min / Max</div>
+            <div className="analytics-value">${analytics.minPrice?.toFixed(2)} / ${analytics.maxPrice?.toFixed(2)}</div>
+          </div>
+          <div className="analytics-item">
+            <div className="analytics-label">Average</div>
+            <div className="analytics-value">${analytics.averagePrice?.toFixed(2)}</div>
+          </div>
+          <div className="analytics-item">
+            <div className="analytics-label">Change</div>
+            <div className="analytics-value" style={{ color: analytics.percentageChange < 0 ? "#087e8b" : "#d9480f" }}>
+              {analytics.percentageChange > 0 ? "+" : ""}{analytics.percentageChange?.toFixed(2)}%
+            </div>
+          </div>
+          <div className="analytics-item">
+            <div className="analytics-label">Trend</div>
+            <div className="analytics-value" style={{ color: getTrendColor(analytics.trend) }}>
+              {trendIcon[analytics.trend]} {analytics.trend}
+            </div>
+          </div>
+          <div className="analytics-item">
+            <div className="analytics-label">Data Points</div>
+            <div className="analytics-value">{analytics.dataPoints}</div>
+          </div>
+        </div>
+      )}
       <div className="chart-wrapper">
         <Line data={data} options={options} />
       </div>
