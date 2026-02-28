@@ -1,4 +1,4 @@
-const ComparisonTable = ({ results, onSelect, onAddToWatchlist, watchlistIds = [] }) => (
+const ComparisonTable = ({ results, onAddToWatchlist, watchlistIds = [] }) => (
   <div className="card">
     <div className="card-title">Price Comparison</div>
     {results.length === 0 ? (
@@ -25,9 +25,15 @@ const ComparisonTable = ({ results, onSelect, onAddToWatchlist, watchlistIds = [
                 <td>{item.shop?.name || "-"}</td>
                 <td>
                   <div className="table-actions">
-                    <button className="ghost-btn" type="button" onClick={() => onSelect(item.product)}>
-                      View Trend
-                    </button>
+                    {item.shop?.phone ? (
+                      <a href={`tel:${item.shop.phone}`} className="ghost-btn" style={{ textDecoration: 'none' }}>
+                        📞 Call
+                      </a>
+                    ) : (
+                      <button className="ghost-btn" type="button" disabled>
+                        No Phone
+                      </button>
+                    )}
                     {onAddToWatchlist && (
                       <button
                         className={isWatched ? "ghost-btn watched" : "ghost-btn"}

@@ -94,13 +94,6 @@ const Home = () => {
     [coords]
   );
 
-  const handleSelectProduct = async (product) => {
-    setSelectedProduct(product);
-    const response = await priceApi.history(product._id);
-    setHistory(response.data.history || []);
-    setAnalytics(response.data.analytics || null);
-  };
-
   const handleChatSend = async (text) => {
     setMessages((prev) => [...prev, { sender: "user", text }]);
     try {
@@ -162,7 +155,6 @@ const Home = () => {
       <div className="grid">
         <ComparisonTable
           results={results}
-          onSelect={handleSelectProduct}
           onAddToWatchlist={user ? handleAddToWatchlist : null}
           watchlistIds={watchlistIds}
         />
