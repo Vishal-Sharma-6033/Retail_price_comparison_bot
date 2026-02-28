@@ -28,7 +28,7 @@ const createOrUpdatePrice = async (req, res, next) => {
       { product: productId, shop: shopId },
       {
         price,
-        currency: currency || existing?.currency || "USD",
+        currency: currency || existing?.currency || "INR",
         inStock: inStock ?? existing?.inStock ?? true,
         lastUpdated: new Date()
       },
@@ -41,8 +41,15 @@ const createOrUpdatePrice = async (req, res, next) => {
       price
     });
 
+    // Notification logic for price drops
+    console.log(`[Notification Check] Product: ${productId}, Previous: ${previousPrice}, New: ${price}`);
+    
     if (previousPrice !== null && price < previousPrice) {
+      console.log(`[Price Drop Detected] Previous: ${previousPrice}, New: ${price}`);
+      
       const watchers = await User.find({ watchlist: productId }).select("_id");
+      console.log(`[Watchers Found] Count: ${watchers.length}`);
+      
       if (watchers.length > 0) {
         const notifications = watchers.map((user) => ({
           user: user._id,
@@ -51,7 +58,16 @@ const createOrUpdatePrice = async (req, res, next) => {
           previousPrice,
           newPrice: price
         }));
-        await Notification.insertMany(notifications);
+        const result = await Notification.insertMany(notifications);
+        console.log(`[Notifications Created] Count: ${result.length}`);
+      } else {
+        console.log(`[No Watchers] Product ${productId} has no watchers`);
+      }
+    } else {
+      if (previousPrice === null) {
+        console.log(`[No Notification] First price entry for product ${productId}`);
+      } else if (price >= previousPrice) {
+        console.log(`[No Notification] Price increased or unchanged (${previousPrice} -> ${price})`);
       }
     }
 

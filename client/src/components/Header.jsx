@@ -1,5 +1,6 @@
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/AuthContext.jsx";
+import NotificationPanel from "./NotificationPanel.jsx";
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -17,6 +18,7 @@ const Header = () => {
         ) : null}
       </nav>
       <div className="auth-actions">
+        {user && <NotificationPanel />}
         {user ? (
           <>
             <span className="role-chip">{user.role}</span>

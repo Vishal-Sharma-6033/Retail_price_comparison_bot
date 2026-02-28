@@ -59,15 +59,15 @@ const PriceTrendChart = ({ history, product, analytics }) => {
         <div className="analytics-grid">
           <div className="analytics-item">
             <div className="analytics-label">Current Price</div>
-            <div className="analytics-value">${analytics.currentPrice?.toFixed(2)}</div>
+            <div className="analytics-value">₹{analytics.currentPrice?.toFixed(2)}</div>
           </div>
           <div className="analytics-item">
             <div className="analytics-label">Min / Max</div>
-            <div className="analytics-value">${analytics.minPrice?.toFixed(2)} / ${analytics.maxPrice?.toFixed(2)}</div>
+            <div className="analytics-value">₹{analytics.minPrice?.toFixed(2)} / ₹{analytics.maxPrice?.toFixed(2)}</div>
           </div>
           <div className="analytics-item">
             <div className="analytics-label">Average</div>
-            <div className="analytics-value">${analytics.averagePrice?.toFixed(2)}</div>
+            <div className="analytics-value">₹{analytics.averagePrice?.toFixed(2)}</div>
           </div>
           <div className="analytics-item">
             <div className="analytics-label">Change</div>

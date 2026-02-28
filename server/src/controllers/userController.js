@@ -20,10 +20,13 @@ const addToWatchlist = async (req, res, next) => {
       return res.status(400).json({ message: "productId is required" });
     }
 
+    console.log(`[Watchlist] User ${req.user._id} adding product ${productId}`);
+    
     await User.findByIdAndUpdate(req.user._id, {
       $addToSet: { watchlist: productId }
     });
 
+    console.log(`[Watchlist] Product ${productId} added successfully`);
     return res.status(204).send();
   } catch (error) {
     return next(error);
