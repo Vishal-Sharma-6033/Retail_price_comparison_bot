@@ -19,7 +19,7 @@ const Dashboard = () => {
     const load = async () => {
       const [shopResponse, productResponse] = await Promise.all([
         shopApi.myShops(),
-        productApi.list()
+        productApi.myProducts()
       ]);
       setShops(shopResponse.data.shops || []);
       setProducts(productResponse.data.products || []);
@@ -46,6 +46,18 @@ const Dashboard = () => {
       setMessage("Shop deleted successfully.");
     } catch (error) {
       setMessage(error.response?.data?.message || "Failed to delete shop.");
+    }
+  };
+
+  const handleDeleteProduct = async (productId) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+    try {
+      setMessage("");
+      await productApi.delete(productId);
+      setProducts((prev) => prev.filter((product) => product._id !== productId));
+      setMessage("Product deleted successfully.");
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Failed to delete product.");
     }
   };
 
@@ -237,6 +249,42 @@ const Dashboard = () => {
                       <button
                         className="danger-btn"
                         onClick={() => handleDeleteShop(shop._id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+      <div className="card">
+        <div className="card-title">My Products</div>
+        {products.length === 0 ? (
+          <p>No products yet. Add your first product above.</p>
+        ) : (
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Brand</th>
+                  <th>Category</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((product) => (
+                  <tr key={product._id}>
+                    <td>{product.name}</td>
+                    <td>{product.brand || "—"}</td>
+                    <td>{product.category || "—"}</td>
+                    <td>
+                      <button
+                        className="danger-btn"
+                        onClick={() => handleDeleteProduct(product._id)}
                       >
                         Delete
                       </button>

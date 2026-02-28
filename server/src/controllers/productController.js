@@ -10,7 +10,13 @@ const createProduct = async (req, res, next) => {
       return res.status(400).json({ message: "Product name is required" });
     }
 
-    const product = await Product.create({ name, brand, category, description });
+    const product = await Product.create({ 
+      name, 
+      brand, 
+      category, 
+      description,
+      owner: req.user._id 
+    });
     return res.status(201).json({ product });
   } catch (error) {
     return next(error);
@@ -88,4 +94,33 @@ const searchProducts = async (req, res, next) => {
   }
 };
 
-module.exports = { createProduct, listProducts, searchProducts };
+const deleteProduct = async (req, res, next) => {
+  try {
+    const { productId } = req.params;
+
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    if (product.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "You can only delete your own products" });
+    }
+
+    await Product.findByIdAndDelete(productId);
+    return res.json({ message: "Product deleted successfully" });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+const getMyProducts = async (req, res, next) => {
+  try {
+    const products = await Product.find({ owner: req.user._id });
+    return res.json({ products });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = { createProduct, listProducts, searchProducts, deleteProduct, getMyProducts };

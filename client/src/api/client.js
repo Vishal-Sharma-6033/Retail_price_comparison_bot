@@ -21,7 +21,9 @@ export const authApi = {
 export const productApi = {
   list: (query) => api.get("/products", { params: query }),
   search: (query) => api.get("/products/search", { params: query }),
-  create: (payload) => api.post("/products", payload)
+  create: (payload) => api.post("/products", payload),
+  delete: (productId) => api.delete(`/products/${productId}`),
+  myProducts: () => api.get("/products/mine")
 };
 
 export const shopApi = {
