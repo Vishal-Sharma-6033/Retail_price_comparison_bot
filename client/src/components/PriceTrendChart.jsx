@@ -1,15 +1,4 @@
-import { Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  LineElement,
-  PointElement,
-  CategoryScale,
-  LinearScale,
-  Tooltip,
-  Legend
-} from "chart.js";
-
-ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
+import ReactApexChart from "react-apexcharts";
 
 const PriceTrendChart = ({ history, product, analytics }) => {
   if (!product) {
@@ -21,23 +10,72 @@ const PriceTrendChart = ({ history, product, analytics }) => {
     );
   }
 
-  const data = {
-    labels: history.map((entry) => new Date(entry.recordedAt).toLocaleDateString()),
-    datasets: [
-      {
-        label: product.name,
-        data: history.map((entry) => entry.price),
-        borderColor: "#0b7285",
-        backgroundColor: "rgba(11, 114, 133, 0.2)",
-        tension: 0.3
-      }
-    ]
-  };
+  const series = [
+    {
+      name: product.name,
+      data: history.map((entry) => [new Date(entry.recordedAt).getTime(), entry.price])
+    }
+  ];
 
   const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: { legend: { display: false } }
+    chart: {
+      type: "area",
+      stacked: false,
+      height: 350,
+      zoom: {
+        type: "x",
+        enabled: true,
+        autoScaleYaxis: true
+      },
+      toolbar: {
+        autoSelected: "zoom"
+      }
+    },
+    dataLabels: {
+      enabled: false
+    },
+    markers: {
+      size: 0
+    },
+    stroke: {
+      curve: "smooth",
+      width: 2
+    },
+    colors: ["#0b7285"],
+    title: {
+      text: `${product.name} Price Movement`,
+      align: "left"
+    },
+    fill: {
+      type: "gradient",
+      gradient: {
+        shadeIntensity: 1,
+        inverseColors: false,
+        opacityFrom: 0.5,
+        opacityTo: 0,
+        stops: [0, 90, 100]
+      }
+    },
+    yaxis: {
+      labels: {
+        formatter: (val) => `₹${Number(val).toFixed(2)}`
+      },
+      title: {
+        text: "Price"
+      }
+    },
+    xaxis: {
+      type: "datetime"
+    },
+    tooltip: {
+      shared: false,
+      y: {
+        formatter: (val) => `₹${Number(val).toFixed(2)}`
+      }
+    },
+    noData: {
+      text: "No price history available"
+    }
   };
 
   const trendIcon = {
@@ -88,7 +126,7 @@ const PriceTrendChart = ({ history, product, analytics }) => {
         </div>
       )}
       <div className="chart-wrapper">
-        <Line data={data} options={options} />
+        <ReactApexChart options={options} series={series} type="area" height={350} />
       </div>
     </div>
   );
