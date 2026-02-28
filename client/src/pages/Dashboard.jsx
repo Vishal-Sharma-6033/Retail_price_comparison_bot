@@ -9,7 +9,7 @@ const Dashboard = () => {
     productId: "",
     shopId: "",
     price: "",
-    currency: "USD",
+    currency: "INR",
     inStock: true
   });
   const [productForm, setProductForm] = useState({ name: "", brand: "", category: "" });
