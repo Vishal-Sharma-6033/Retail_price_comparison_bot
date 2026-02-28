@@ -8,3 +8,11 @@ app.use(express.static(path.join(__dirname, "/client/dist")));
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "client","dist", "index.html"));
 });
+
+Use this from the project root:
+
+npm run dev
+That runs both:
+
+server: npm run dev:server
+client: npm run dev:client
