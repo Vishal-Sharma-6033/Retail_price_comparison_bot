@@ -37,6 +37,9 @@ const ensureDbConnection = async (req, res, next) => {
 };
 
 app.use(ensureDbConnection);
+app.get("/", (req, res) => {
+  res.send("Backend is running 🚀");
+});
 
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok" });
