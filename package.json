@@ -8,7 +8,7 @@
     "dev:server": "nodemon --watch server/src --ext js,json server/src/index.js",
     "dev:client": "npm run dev --prefix client",
     "start": "node server/src/index.js",
-    "build": "npm run build --prefix client"
+    "build": "rm -rf client/node_modules client/package-lock.json && npm install --prefix client --include=optional && npm run build --prefix client"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
