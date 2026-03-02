@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@200;300;400;500;600;700;800;900&display=swap');
+
 :root {
   color-scheme: light;
   --bg: #f8f4ee;
@@ -17,7 +19,7 @@
 
 body {
   margin: 0;
-  font-family: "Palatino Linotype", "Book Antiqua", Palatino, serif;
+  font-family: "Nunito", sans-serif;
   background: radial-gradient(circle at top, rgba(249, 115, 22, 0.12), transparent 55%),
     linear-gradient(135deg, rgba(11, 114, 133, 0.08), rgba(248, 244, 238, 0.9));
   color: var(--ink);
@@ -49,7 +51,7 @@ a {
 }
 
 .brand {
-  font-family: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", sans-serif;
+  font-family: "Nunito", sans-serif;
   font-size: 1.2rem;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -99,7 +101,7 @@ a {
 
 .page.narrow {
   max-width: 560px;
-  margin: 0 auto;
+  margin:150px auto;
 }
 
 .hero {
@@ -120,7 +122,7 @@ a {
 .hero h1 {
   font-size: 2.4rem;
   margin: 0 0 12px;
-  font-family: "Trebuchet MS", "Lucida Grande", "Lucida Sans Unicode", sans-serif;
+  font-family: "Nunito", sans-serif;
 }
 
 .hero-panel {
@@ -289,9 +291,7 @@ input[type="number"]::-webkit-outer-spin-button {
   height: 40px;
 }
 
-input[type="search"] {
-  -webkit-appearance: none;
-}
+
 
 input[type="search"]::-webkit-search-cancel-button {
   -webkit-appearance: none;
