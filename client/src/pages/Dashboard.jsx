@@ -31,10 +31,14 @@ const Dashboard = () => {
   const handleCreateShop = async (event) => {
     event.preventDefault();
     setMessage("");
-    const response = await shopApi.create(shopForm);
-    setShops((prev) => [...prev, response.data.shop]);
-    setShopForm({ name: "", address: "", phone: "" });
-    setMessage("Shop created.");
+    try {
+      const response = await shopApi.create(shopForm);
+      setShops((prev) => [...prev, response.data.shop]);
+      setShopForm({ name: "", address: "", phone: "" });
+      setMessage("Shop created successfully. Location will be auto-detected from address.");
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Failed to create shop.");
+    }
   };
 
   const handleDeleteShop = async (shopId) => {
@@ -82,6 +86,21 @@ const Dashboard = () => {
       price: Number(priceForm.price)
     });
     setMessage("Price updated.");
+  };
+
+  const handleFixShopLocation = async (shopId, shopName) => {
+    try {
+      setMessage("");
+      const response = await shopApi.updateLocation(shopId);
+      setShops((prev) =>
+        prev.map((shop) =>
+          shop._id === shopId ? response.data.shop : shop
+        )
+      );
+      setMessage(`Location updated for ${shopName} ✓`);
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Failed to update location. Ensure Google Maps API is configured.");
+    }
   };
 
   return (
@@ -240,25 +259,43 @@ const Dashboard = () => {
                   <th>Name</th>
                   <th>Address</th>
                   <th>Phone</th>
+                  <th>Location</th>
                   <th>Action</th>
                 </tr>
               </thead>
               <tbody>
-                {shops.map((shop) => (
-                  <tr key={shop._id}>
-                    <td>{shop.name}</td>
-                    <td>{shop.address || "—"}</td>
-                    <td>{shop.phone || "—"}</td>
-                    <td>
-                      <button
-                        className="danger-btn"
-                        onClick={() => handleDeleteShop(shop._id)}
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {shops.map((shop) => {
+                  const hasValidCoords = shop.location?.coordinates && 
+                    (shop.location.coordinates[0] !== 0 || shop.location.coordinates[1] !== 0);
+                  return (
+                    <tr key={shop._id}>
+                      <td>{shop.name}</td>
+                      <td>{shop.address || "—"}</td>
+                      <td>{shop.phone || "—"}</td>
+                      <td>
+                        {hasValidCoords ? (
+                          <span style={{ color: "var(--teal)", fontWeight: "500" }}>✓ Set</span>
+                        ) : (
+                          <button
+                            className="ghost-btn"
+                            style={{ padding: "4px 8px", fontSize: "0.85rem" }}
+                            onClick={() => handleFixShopLocation(shop._id, shop.name)}
+                          >
+                            📍 Fix
+                          </button>
+                        )}
+                      </td>
+                      <td>
+                        <button
+                          className="danger-btn"
+                          onClick={() => handleDeleteShop(shop._id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

@@ -1,11 +1,52 @@
 const Shop = require("../models/Shop");
 
+const getGoogleMapsApiKey = () => {
+  return process.env.GOOGLE_MAPS_API_KEY || process.env.GEOCODE_API_KEY || "";
+};
+
+const geocodeAddressHelper = async (address) => {
+  if (!address) {
+    return { latitude: 0, longitude: 0 };
+  }
+
+  const apiKey = getGoogleMapsApiKey();
+  if (!apiKey) {
+    return { latitude: 0, longitude: 0 };
+  }
+
+  try {
+    const encoded = encodeURIComponent(address);
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encoded}&key=${apiKey}`;
+    const response = await fetch(url);
+    const payload = await response.json();
+
+    if (payload.results && payload.results.length > 0) {
+      const { lat, lng } = payload.results[0].geometry.location;
+      return { latitude: lat, longitude: lng };
+    }
+  } catch (error) {
+    console.error("Geocoding error:", error);
+  }
+
+  return { latitude: 0, longitude: 0 };
+};
+
 const createShop = async (req, res, next) => {
   try {
     const { name, address, phone, latitude, longitude } = req.body;
 
     if (!name) {
       return res.status(400).json({ message: "Shop name is required" });
+    }
+
+    // If coordinates are not provided, try to geocode the address
+    let finalLat = Number(latitude) || 0;
+    let finalLng = Number(longitude) || 0;
+
+    if ((finalLat === 0 || finalLng === 0) && address) {
+      const geocoded = await geocodeAddressHelper(address);
+      finalLat = geocoded.latitude;
+      finalLng = geocoded.longitude;
     }
 
     const shop = await Shop.create({
@@ -15,7 +56,7 @@ const createShop = async (req, res, next) => {
       phone,
       location: {
         type: "Point",
-        coordinates: [Number(longitude) || 0, Number(latitude) || 0]
+        coordinates: [finalLng, finalLat]
       }
     });
 
@@ -64,12 +105,13 @@ const geocodeAddress = async (req, res, next) => {
       return res.status(400).json({ message: "address is required" });
     }
 
-    if (!process.env.GOOGLE_MAPS_API_KEY) {
+    const apiKey = getGoogleMapsApiKey();
+    if (!apiKey) {
       return res.status(400).json({ message: "Google Maps API key is not configured" });
     }
 
     const encoded = encodeURIComponent(address);
-    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encoded}&key=${process.env.GOOGLE_MAPS_API_KEY}`;
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encoded}&key=${apiKey}`;
     const response = await fetch(url);
     const payload = await response.json();
 
@@ -104,4 +146,53 @@ const deleteShop = async (req, res, next) => {
   }
 };
 
-module.exports = { createShop, getNearbyShops, getMyShops, geocodeAddress, deleteShop };
+const updateShopLocation = async (req, res, next) => {
+  try {
+    const { shopId } = req.params;
+
+    const shop = await Shop.findById(shopId);
+    if (!shop) {
+      return res.status(404).json({ message: "Shop not found" });
+    }
+
+    if (shop.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: "You can only update your own shops" });
+    }
+
+    if (!shop.address) {
+      return res.status(400).json({ message: "Shop must have an address to geocode" });
+    }
+
+    const apiKey = getGoogleMapsApiKey();
+    if (!apiKey) {
+      return res.status(400).json({ message: "Google Maps API is not configured. Contact admin." });
+    }
+
+    const encoded = encodeURIComponent(shop.address);
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encoded}&key=${apiKey}`;
+    const response = await fetch(url);
+    const payload = await response.json();
+
+    if (!payload.results || payload.results.length === 0) {
+      return res.status(404).json({ message: "Could not find location for this address" });
+    }
+
+    const { lat, lng } = payload.results[0].geometry.location;
+    const updatedShop = await Shop.findByIdAndUpdate(
+      shopId,
+      {
+        location: {
+          type: "Point",
+          coordinates: [lng, lat]
+        }
+      },
+      { new: true }
+    );
+
+    return res.json({ shop: updatedShop, message: "Location updated successfully" });
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = { createShop, getNearbyShops, getMyShops, geocodeAddress, updateShopLocation, deleteShop };

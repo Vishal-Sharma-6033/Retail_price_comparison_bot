@@ -31,7 +31,8 @@ export const shopApi = {
   myShops: () => api.get("/shops/mine"),
   create: (payload) => api.post("/shops", payload),
   delete: (shopId) => api.delete(`/shops/${shopId}`),
-  geocode: (query) => api.get("/shops/geocode", { params: query })
+  geocode: (query) => api.get("/shops/geocode", { params: query }),
+  updateLocation: (shopId) => api.patch(`/shops/${shopId}/location`)
 };
 
 export const priceApi = {

@@ -4,6 +4,7 @@ import SearchBar from "../components/SearchBar.jsx";
 import ComparisonTable from "../components/ComparisonTable.jsx";
 import ChatbotPanel from "../components/ChatbotPanel.jsx";
 import PriceTrendChart from "../components/PriceTrendChart.jsx";
+import DirectionsMap from "../components/DirectionsMap.jsx";
 import { chatbotApi, priceApi, productApi, shopApi, userApi } from "../api/client.js";
 
 const Home = () => {
@@ -16,6 +17,19 @@ const Home = () => {
   const [coords, setCoords] = useState(null);
   const [watchlistIds, setWatchlistIds] = useState([]);
   const [locationStatus, setLocationStatus] = useState("");
+  const [selectedShop, setSelectedShop] = useState(null);
+  const [showDirections, setShowDirections] = useState(false);
+
+  const hasValidShopCoordinates = (shop) => {
+    const coords = shop?.location?.coordinates;
+    if (!Array.isArray(coords) || coords.length !== 2) {
+      return false;
+    }
+
+    const [lng, lat] = coords;
+    const validNumbers = Number.isFinite(lng) && Number.isFinite(lat);
+    return validNumbers && !(lng === 0 && lat === 0);
+  };
 
   const handleUseLocation = () => {
     if (!navigator.geolocation) {
@@ -123,6 +137,32 @@ const Home = () => {
     }
   };
 
+  const handleGetDirections = (shop, userLocation) => {
+    if (!userLocation) {
+      alert("Please enable location first to get directions.");
+      return;
+    }
+
+    if (!hasValidShopCoordinates(shop)) {
+      if (shop?.address) {
+        const origin = `${userLocation.lat},${userLocation.lng}`;
+        const destination = encodeURIComponent(shop.address);
+        window.open(
+          `https://www.google.com/maps/dir/?api=1&origin=${origin}&destination=${destination}`,
+          "_blank",
+          "noopener,noreferrer"
+        );
+        return;
+      }
+
+      alert("This shop has no valid map coordinates yet. Ask the shopkeeper to fix shop location.");
+      return;
+    }
+
+    setSelectedShop(shop);
+    setShowDirections(true);
+  };
+
   useEffect(() => {
     const loadWatchlist = async () => {
       if (!user) return;
@@ -157,6 +197,8 @@ const Home = () => {
           results={results}
           onAddToWatchlist={user ? handleAddToWatchlist : null}
           watchlistIds={watchlistIds}
+          onGetDirections={handleGetDirections}
+          userLocation={coords}
         />
         <PriceTrendChart history={history} product={selectedProduct} analytics={analytics} />
       </div>
@@ -171,6 +213,15 @@ const Home = () => {
           </p>
         </div>
       </div>
+      {showDirections && selectedShop && coords && (
+        <DirectionsMap
+          userLocation={coords}
+          shopLocation={selectedShop.location}
+          shopName={selectedShop.name}
+          shopAddress={selectedShop.address}
+          onClose={() => setShowDirections(false)}
+        />
+      )}
     </section>
   );
 };

@@ -1,4 +1,4 @@
-const ComparisonTable = ({ results, onAddToWatchlist, watchlistIds = [] }) => (
+const ComparisonTable = ({ results, onAddToWatchlist, watchlistIds = [], onGetDirections, userLocation }) => (
   <div className="card">
     <div className="card-title">Price Comparison</div>
     {results.length === 0 ? (
@@ -10,12 +10,21 @@ const ComparisonTable = ({ results, onAddToWatchlist, watchlistIds = [] }) => (
             <th>Product</th>
             <th>Best Price</th>
             <th>Shop</th>
+            <th>Distance</th>
             <th></th>
           </tr>
         </thead>
         <tbody>
           {results.map((item) => {
             const isWatched = watchlistIds.includes(item.product._id);
+            const coordinates = item.shop?.location?.coordinates;
+            const hasValidCoordinates =
+              Array.isArray(coordinates) &&
+              coordinates.length === 2 &&
+              Number.isFinite(coordinates[0]) &&
+              Number.isFinite(coordinates[1]) &&
+              !(coordinates[0] === 0 && coordinates[1] === 0);
+            const canGetDirections = Boolean(userLocation && (hasValidCoordinates || item.shop?.address));
             return (
               <tr key={item.product._id}>
                 <td>{item.product.name}</td>
@@ -23,6 +32,19 @@ const ComparisonTable = ({ results, onAddToWatchlist, watchlistIds = [] }) => (
                   {item.bestPrice} {item.currency}
                 </td>
                 <td>{item.shop?.name || "-"}</td>
+                <td>
+                  {canGetDirections ? (
+                    <button
+                      className="ghost-btn distance-btn"
+                      type="button"
+                      onClick={() => onGetDirections && onGetDirections(item.shop, userLocation)}
+                    >
+                      📍 Show Route
+                    </button>
+                  ) : (
+                    <span className="muted">—</span>
+                  )}
+                </td>
                 <td>
                   <div className="table-actions">
                     {item.shop?.phone ? (
