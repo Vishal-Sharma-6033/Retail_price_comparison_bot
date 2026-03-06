@@ -550,6 +550,76 @@ input[type="radio"]:focus {
   gap: 12px;
 }
 
+.profile-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 12px;
+}
+
+.profile-stat-item {
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(11, 114, 133, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-stat-label {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.profile-stat-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--teal);
+}
+
+.profile-member-since {
+  margin-top: 12px;
+}
+
+.activity-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.activity-item {
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: rgba(249, 115, 22, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.activity-main {
+  min-width: 0;
+}
+
+.activity-query {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.activity-meta {
+  font-size: 0.88rem;
+}
+
+.activity-delete-btn {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+
 .watchlist-item {
   display: flex;
   align-items: center;
@@ -960,6 +1030,20 @@ input[type="radio"]:focus {
   .danger-btn {
     padding: 8px 14px;
     font-size: 0.8rem;
+  }
+
+  .watchlist-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .watchlist-price {
+    align-items: flex-start;
+  }
+
+  .activity-item {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 

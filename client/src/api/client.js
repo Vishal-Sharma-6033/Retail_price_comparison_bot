@@ -51,6 +51,8 @@ export const notificationApi = {
 };
 
 export const userApi = {
+  profileInsights: () => api.get("/users/profile-insights"),
+  deleteRecentActivity: (activityId) => api.delete(`/users/recent-activity/${activityId}`),
   watchlist: () => api.get("/users/watchlist"),
   addWatch: (payload) => api.post("/users/watchlist", payload),
   removeWatch: (productId) => api.delete(`/users/watchlist/${productId}`)

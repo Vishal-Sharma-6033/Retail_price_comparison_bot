@@ -6,6 +6,8 @@ const Profile = () => {
   const { user } = useAuth();
   const [watchlist, setWatchlist] = useState([]);
   const [priceData, setPriceData] = useState({});
+  const [insights, setInsights] = useState({ recentActivity: [], stats: null });
+  const [insightsLoading, setInsightsLoading] = useState(true);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -46,6 +48,62 @@ const Profile = () => {
     loadWatchlist();
   }, []);
 
+  useEffect(() => {
+    const loadInsights = async () => {
+      try {
+        const response = await userApi.profileInsights();
+        setInsights({
+          recentActivity: response.data.recentActivity || [],
+          stats: response.data.stats || null
+        });
+      } catch (error) {
+        console.error("Failed to load profile insights:", error);
+      } finally {
+        setInsightsLoading(false);
+      }
+    };
+
+    loadInsights();
+  }, []);
+
+  const formatSearchTime = (value) => {
+    if (!value) {
+      return "-";
+    }
+
+    return new Date(value).toLocaleString([], {
+      dateStyle: "medium",
+      timeStyle: "short"
+    });
+  };
+
+  const statTiles = [
+    {
+      label: "Total Searches",
+      value: insights.stats?.totalSearches ?? 0
+    },
+    {
+      label: "Live Users",
+      value: insights.stats?.liveUsers ?? 0
+    },
+    {
+      label: "Platform Users",
+      value: insights.stats?.totalUsers ?? 0
+    },
+    {
+      label: "Products Tracked",
+      value: insights.stats?.totalProducts ?? 0
+    },
+    {
+      label: "Shops Onboarded",
+      value: insights.stats?.totalShops ?? 0
+    },
+    {
+      label: "Watchlist Items",
+      value: insights.stats?.watchlistCount ?? watchlist.length
+    }
+  ];
+
   const handleRemove = async (productId) => {
     try {
       await userApi.removeWatch(productId);
@@ -57,6 +115,22 @@ const Profile = () => {
       });
     } catch (error) {
       console.error("Failed to remove from watchlist:", error);
+    }
+  };
+
+  const handleDeleteActivity = async (activityId) => {
+    if (!activityId) {
+      return;
+    }
+
+    try {
+      await userApi.deleteRecentActivity(activityId);
+      setInsights((prev) => ({
+        ...prev,
+        recentActivity: prev.recentActivity.filter((item) => item._id !== activityId)
+      }));
+    } catch (error) {
+      console.error("Failed to delete activity:", error);
     }
   };
 
@@ -86,6 +160,29 @@ const Profile = () => {
               <span className="role-chip">{user?.role}</span>
             </div>
           </div>
+        </div>
+
+        <div className="card">
+          <div className="card-title">User Stats</div>
+          {insightsLoading ? (
+            <p className="muted">Loading usage stats...</p>
+          ) : (
+            <>
+              <div className="profile-stats-grid">
+                {statTiles.map((tile) => (
+                  <div key={tile.label} className="profile-stat-item">
+                    <span className="profile-stat-label">{tile.label}</span>
+                    <span className="profile-stat-value">{tile.value}</span>
+                  </div>
+                ))}
+              </div>
+              {insights.stats?.memberSince ? (
+                <p className="muted profile-member-since">
+                  Member since {new Date(insights.stats.memberSince).toLocaleDateString()}
+                </p>
+              ) : null}
+            </>
+          )}
         </div>
 
         <div className="card">
@@ -131,6 +228,39 @@ const Profile = () => {
                   </div>
                 );
               })}
+            </div>
+          )}
+        </div>
+
+        <div className="card">
+          <div className="card-title">Recent Activity</div>
+          {insightsLoading ? (
+            <p className="muted">Loading recent searches...</p>
+          ) : insights.recentActivity.length === 0 ? (
+            <p className="muted">No searches yet. Start searching products to build your activity history.</p>
+          ) : (
+            <div className="activity-list">
+              {insights.recentActivity.map((item, index) => (
+                <div
+                  key={item._id || `${item.query}-${item.searchedAt || index}`}
+                  className="activity-item"
+                >
+                  <div className="activity-main">
+                    <div className="activity-query">{item.query}</div>
+                    <div className="activity-meta muted">
+                      {item.address ? `Near ${item.address} • ` : ""}
+                      {formatSearchTime(item.searchedAt)}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="ghost-btn activity-delete-btn"
+                    onClick={() => handleDeleteActivity(item._id)}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </div>

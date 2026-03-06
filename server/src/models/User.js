@@ -10,7 +10,16 @@ const userSchema = new mongoose.Schema(
       enum: ["customer", "shopkeeper", "admin"],
       default: "customer"
     },
-    watchlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }]
+    watchlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
+    recentSearches: [
+      {
+        query: { type: String, required: true, trim: true },
+        address: { type: String, trim: true },
+        searchedAt: { type: Date, default: Date.now }
+      }
+    ],
+    totalSearches: { type: Number, default: 0 },
+    lastSeenAt: { type: Date, default: Date.now }
   },
   { timestamps: true }
 );

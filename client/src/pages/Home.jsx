@@ -92,7 +92,8 @@ const Home = () => {
         const response = await productApi.search({
           q: query,
           lat: location?.lat,
-          lng: location?.lng
+          lng: location?.lng,
+          address
         });
         setResults(response.data.results || []);
         if (response.data.results?.length) {

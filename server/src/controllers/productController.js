@@ -1,6 +1,7 @@
 const Product = require("../models/Product");
 const Shop = require("../models/Shop");
 const PriceListing = require("../models/PriceListing");
+const User = require("../models/User");
 
 const normalizeInput = (value = "") => value.trim().replace(/\s+/g, " ");
 const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -26,6 +27,34 @@ const buildEmptyFieldCondition = (fieldName) => ({
     { [fieldName]: /^\s*$/ }
   ]
 });
+
+const trackSearchActivity = async (userId, queryText, addressText) => {
+  const query = normalizeInput(queryText || "");
+  if (!userId || !query) {
+    return;
+  }
+
+  const address = normalizeInput(addressText || "");
+  const entry = {
+    query,
+    searchedAt: new Date()
+  };
+
+  if (address) {
+    entry.address = address;
+  }
+
+  await User.findByIdAndUpdate(userId, {
+    $push: {
+      recentSearches: {
+        $each: [entry],
+        $position: 0,
+        $slice: 20
+      }
+    },
+    $inc: { totalSearches: 1 }
+  });
+};
 
 const createProduct = async (req, res, next) => {
   try {
@@ -81,9 +110,15 @@ const listProducts = async (req, res, next) => {
 
 const searchProducts = async (req, res, next) => {
   try {
-    const { q, lat, lng, radius = 5000 } = req.query;
+    const { q, lat, lng, radius = 5000, address } = req.query;
     if (!q) {
       return res.status(400).json({ message: "q is required" });
+    }
+
+    if (req.user?._id) {
+      trackSearchActivity(req.user._id, q, address).catch(() => {
+        // Search activity tracking should not block search results.
+      });
     }
 
     const productQuery = { $text: { $search: q } };

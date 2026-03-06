@@ -1,5 +1,5 @@
 const express = require("express");
-const { authenticate } = require("../middleware/auth");
+const { authenticate, optionalAuthenticate } = require("../middleware/auth");
 const { requireRole } = require("../middleware/roles");
 const {
   createProduct,
@@ -12,7 +12,7 @@ const {
 const router = express.Router();
 
 router.get("/", listProducts);
-router.get("/search", searchProducts);
+router.get("/search", optionalAuthenticate, searchProducts);
 router.get("/mine", authenticate, requireRole("shopkeeper", "admin"), getMyProducts);
 router.post("/", authenticate, requireRole("shopkeeper", "admin"), createProduct);
 router.delete("/:productId", authenticate, requireRole("shopkeeper", "admin"), deleteProduct);
