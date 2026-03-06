@@ -2,19 +2,64 @@ const Product = require("../models/Product");
 const Shop = require("../models/Shop");
 const PriceListing = require("../models/PriceListing");
 
+const normalizeInput = (value = "") => value.trim().replace(/\s+/g, " ");
+const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+const buildLooseExactRegex = (value = "") => {
+  const normalized = normalizeInput(value);
+  if (!normalized) {
+    return null;
+  }
+
+  const pattern = normalized
+    .split(" ")
+    .map((word) => escapeRegex(word))
+    .join("\\s+");
+
+  return new RegExp(`^\\s*${pattern}\\s*$`, "i");
+};
+
+const buildEmptyFieldCondition = (fieldName) => ({
+  $or: [
+    { [fieldName]: { $exists: false } },
+    { [fieldName]: null },
+    { [fieldName]: "" },
+    { [fieldName]: /^\s*$/ }
+  ]
+});
+
 const createProduct = async (req, res, next) => {
   try {
-    const { name, brand, category, description } = req.body;
+    const name = normalizeInput(req.body.name || "");
+    const brand = normalizeInput(req.body.brand || "");
+    const category = normalizeInput(req.body.category || "");
+    const description = normalizeInput(req.body.description || "");
 
     if (!name) {
       return res.status(400).json({ message: "Product name is required" });
     }
 
+    const duplicateQuery = {
+      $and: [
+        { owner: req.user._id },
+        { name: buildLooseExactRegex(name) },
+        brand ? { brand: buildLooseExactRegex(brand) } : buildEmptyFieldCondition("brand"),
+        category ? { category: buildLooseExactRegex(category) } : buildEmptyFieldCondition("category")
+      ]
+    };
+
+    const duplicate = await Product.findOne(duplicateQuery).select("_id name brand category");
+    if (duplicate) {
+      return res.status(409).json({
+        message: "Duplicate product detected. A matching product already exists.",
+        duplicateProductId: duplicate._id
+      });
+    }
+
     const product = await Product.create({ 
       name, 
-      brand, 
-      category, 
-      description,
+      brand: brand || undefined,
+      category: category || undefined,
+      description: description || undefined,
       owner: req.user._id 
     });
     return res.status(201).json({ product });

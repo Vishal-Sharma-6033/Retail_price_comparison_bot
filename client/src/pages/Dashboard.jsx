@@ -64,10 +64,14 @@ const Dashboard = () => {
   const handleCreateProduct = async (event) => {
     event.preventDefault();
     setMessage("");
-    const response = await productApi.create(productForm);
-    setProducts((prev) => [...prev, response.data.product]);
-    setProductForm({ name: "", brand: "", category: "" });
-    setMessage("Product added.");
+    try {
+      const response = await productApi.create(productForm);
+      setProducts((prev) => [...prev, response.data.product]);
+      setProductForm({ name: "", brand: "", category: "" });
+      setMessage("Product added.");
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Failed to add product.");
+    }
   };
 
   const handleUpdatePrice = async (event) => {
