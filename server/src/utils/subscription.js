@@ -12,7 +12,7 @@ const PLAN_CATALOG = {
   basic: {
     code: "basic",
     name: "Basic",
-    amountPaise: 19900,
+    amountPaise: 500,
     currency: "INR",
     limits: {
       shops: 10,

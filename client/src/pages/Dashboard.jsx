@@ -18,6 +18,14 @@ const loadRazorpayScript = async () => {
   });
 };
 
+const formatPlanLimit = (value, label) => {
+  if (value === null || value === undefined) {
+    return `Unlimited ${label}`;
+  }
+
+  return `${value} ${label}`;
+};
+
 const Dashboard = () => {
   const { user, updateUser, refreshUser } = useAuth();
   const [shops, setShops] = useState([]);
@@ -252,7 +260,7 @@ const Dashboard = () => {
             Current: <strong>{subscription?.plan || "free"}</strong>
           </p>
           <p className="muted">
-            Limits: {subscription?.limits?.shops ?? 1} shops, {subscription?.limits?.products ?? 1} products
+            Limits: {formatPlanLimit(subscription?.limits?.shops, "shops")}, {formatPlanLimit(subscription?.limits?.products, "products")}
           </p>
           <button
             className="ghost-btn"
