@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { notificationApi } from "../api/client.js";
+import { useAuth } from "../context/AuthContext.jsx";
+import { createSocketConnection } from "../services/socket.js";
 
 const NotificationPanel = () => {
+  const { token } = useAuth();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
@@ -23,6 +26,27 @@ const NotificationPanel = () => {
     const interval = setInterval(loadNotifications, 30000); // Refresh every 30 seconds
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!token) {
+      return undefined;
+    }
+
+    const socket = createSocketConnection(token);
+
+    socket.on("notification:new", (notification) => {
+      setNotifications((prev) => {
+        if (prev.some((item) => item._id === notification._id)) {
+          return prev;
+        }
+        return [notification, ...prev].slice(0, 50);
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [token]);
 
   const handleMarkRead = async (id) => {
     try {

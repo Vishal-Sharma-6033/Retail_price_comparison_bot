@@ -3,6 +3,7 @@ const PriceHistory = require("../models/PriceHistory");
 const Notification = require("../models/Notification");
 const Shop = require("../models/Shop");
 const User = require("../models/User");
+const { getIo } = require("../socket");
 
 const createOrUpdatePrice = async (req, res, next) => {
   try {
@@ -59,6 +60,18 @@ const createOrUpdatePrice = async (req, res, next) => {
           newPrice: price
         }));
         const result = await Notification.insertMany(notifications);
+        const createdNotifications = await Notification.find({
+          _id: { $in: result.map((item) => item._id) }
+        })
+          .populate("product")
+          .populate("shop");
+
+        const io = getIo();
+        if (io) {
+          createdNotifications.forEach((notification) => {
+            io.to(`user:${notification.user.toString()}`).emit("notification:new", notification);
+          });
+        }
         console.log(`[Notifications Created] Count: ${result.length}`);
       } else {
         console.log(`[No Watchers] Product ${productId} has no watchers`);
