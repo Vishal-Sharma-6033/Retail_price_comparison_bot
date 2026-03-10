@@ -1,7 +1,25 @@
 import { useEffect, useState } from "react";
-import { priceApi, productApi, shopApi } from "../api/client.js";
+import { priceApi, productApi, shopApi, subscriptionApi } from "../api/client.js";
+import { useAuth } from "../context/AuthContext.jsx";
+import SubscriptionModal from "../components/SubscriptionModal.jsx";
+
+const loadRazorpayScript = async () => {
+  if (window.Razorpay) {
+    return true;
+  }
+
+  return new Promise((resolve) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
 
 const Dashboard = () => {
+  const { user, updateUser, refreshUser } = useAuth();
   const [shops, setShops] = useState([]);
   const [products, setProducts] = useState([]);
   const [shopForm, setShopForm] = useState({ name: "", address: "", phone: "" });
@@ -14,19 +32,59 @@ const Dashboard = () => {
   });
   const [productForm, setProductForm] = useState({ name: "", brand: "", category: "" });
   const [message, setMessage] = useState("");
+  const [subscription, setSubscription] = useState(null);
+  const [plans, setPlans] = useState([]);
+  const [upgradeLoading, setUpgradeLoading] = useState(false);
+  const [modalState, setModalState] = useState({
+    open: false,
+    resource: "",
+    currentPlan: "free",
+    availablePlans: []
+  });
+
+  const loadDashboardData = async () => {
+    const [shopResponse, productResponse] = await Promise.all([
+      shopApi.myShops(),
+      productApi.myProducts()
+    ]);
+    setShops(shopResponse.data.shops || []);
+    setProducts(productResponse.data.products || []);
+  };
+
+  const loadSubscription = async () => {
+    if (user?.role !== "shopkeeper") {
+      return;
+    }
+
+    const response = await subscriptionApi.me();
+    setSubscription(response.data.subscription || null);
+    setPlans(response.data.plans || []);
+  };
+
+  const maybeOpenSubscriptionModal = (errorData) => {
+    if (user?.role !== "shopkeeper" || errorData?.code !== "SUBSCRIPTION_REQUIRED") {
+      return false;
+    }
+
+    setModalState({
+      open: true,
+      resource: errorData.resource,
+      currentPlan: errorData.currentPlan || "free",
+      availablePlans: errorData.availablePlans || plans
+    });
+    return true;
+  };
 
   useEffect(() => {
     const load = async () => {
-      const [shopResponse, productResponse] = await Promise.all([
-        shopApi.myShops(),
-        productApi.myProducts()
-      ]);
-      setShops(shopResponse.data.shops || []);
-      setProducts(productResponse.data.products || []);
+      await loadDashboardData();
+      await loadSubscription();
     };
 
-    load();
-  }, []);
+    load().catch(() => {
+      setMessage("Failed to load dashboard data.");
+    });
+  }, [user?.role]);
 
   const handleCreateShop = async (event) => {
     event.preventDefault();
@@ -37,7 +95,10 @@ const Dashboard = () => {
       setShopForm({ name: "", address: "", phone: "" });
       setMessage("Shop created successfully. Location will be auto-detected from address.");
     } catch (error) {
-      setMessage(error.response?.data?.message || "Failed to create shop.");
+      const errorData = error.response?.data;
+      if (!maybeOpenSubscriptionModal(errorData)) {
+        setMessage(errorData?.message || "Failed to create shop.");
+      }
     }
   };
 
@@ -74,7 +135,79 @@ const Dashboard = () => {
       setProductForm({ name: "", brand: "", category: "" });
       setMessage("Product added.");
     } catch (error) {
-      setMessage(error.response?.data?.message || "Failed to add product.");
+      const errorData = error.response?.data;
+      if (!maybeOpenSubscriptionModal(errorData)) {
+        setMessage(errorData?.message || "Failed to add product.");
+      }
+    }
+  };
+
+  const handleUpgradePlan = async (planCode) => {
+    try {
+      setUpgradeLoading(true);
+      const [scriptLoaded, orderResponse] = await Promise.all([
+        loadRazorpayScript(),
+        subscriptionApi.createOrder({ planCode })
+      ]);
+
+      if (!scriptLoaded || !window.Razorpay) {
+        setMessage("Razorpay checkout failed to load. Please try again.");
+        setUpgradeLoading(false);
+        return;
+      }
+
+      const { keyId, order, plan } = orderResponse.data;
+      const razorpay = new window.Razorpay({
+        key: keyId,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Retail Price Bot",
+        description: `${plan.name} plan upgrade`,
+        order_id: order.id,
+        prefill: {
+          name: user?.name,
+          email: user?.email
+        },
+        notes: {
+          planCode: plan.code
+        },
+        theme: {
+          color: "#0b7285"
+        },
+        handler: async (paymentResponse) => {
+          try {
+            const verifyResponse = await subscriptionApi.verify({
+              planCode,
+              razorpay_order_id: paymentResponse.razorpay_order_id,
+              razorpay_payment_id: paymentResponse.razorpay_payment_id,
+              razorpay_signature: paymentResponse.razorpay_signature
+            });
+
+            setSubscription(verifyResponse.data.subscription);
+            updateUser(verifyResponse.data.user);
+            await refreshUser();
+            await loadSubscription();
+            setModalState((prev) => ({ ...prev, open: false }));
+            setMessage(verifyResponse.data.message || "Subscription upgraded successfully.");
+          } catch (error) {
+            setMessage(error.response?.data?.message || "Payment verification failed.");
+          } finally {
+            setUpgradeLoading(false);
+          }
+        }
+      });
+
+      razorpay.on("payment.failed", (event) => {
+        const reason = event?.error?.description || "Payment failed. Please try again.";
+        setMessage(reason);
+        setUpgradeLoading(false);
+      });
+
+      setUpgradeLoading(false);
+      razorpay.open();
+    } catch (error) {
+      setUpgradeLoading(false);
+      setMessage(error.response?.data?.message || "Could not start payment flow.");
     }
   };
 
@@ -112,6 +245,31 @@ const Dashboard = () => {
         </div>
       </div>
       {message ? <p className="notice">{message}</p> : null}
+      {user?.role === "shopkeeper" ? (
+        <div className="card subscription-summary-card">
+          <div className="card-title">Your Plan</div>
+          <p>
+            Current: <strong>{subscription?.plan || "free"}</strong>
+          </p>
+          <p className="muted">
+            Limits: {subscription?.limits?.shops ?? 1} shops, {subscription?.limits?.products ?? 1} products
+          </p>
+          <button
+            className="ghost-btn"
+            type="button"
+            onClick={() =>
+              setModalState({
+                open: true,
+                resource: "shops/products",
+                currentPlan: subscription?.plan || "free",
+                availablePlans: plans
+              })
+            }
+          >
+            Upgrade Plan
+          </button>
+        </div>
+      ) : null}
       <div className="grid">
         <div className="card">
           <div className="card-title">Create Shop</div>
@@ -337,6 +495,15 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+      <SubscriptionModal
+        open={modalState.open && user?.role === "shopkeeper"}
+        resource={modalState.resource}
+        currentPlan={modalState.currentPlan}
+        plans={modalState.availablePlans.length ? modalState.availablePlans : plans}
+        loading={upgradeLoading}
+        onClose={() => setModalState((prev) => ({ ...prev, open: false }))}
+        onUpgrade={handleUpgradePlan}
+      />
     </section>
   );
 };

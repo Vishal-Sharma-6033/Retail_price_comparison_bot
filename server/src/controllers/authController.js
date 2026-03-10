@@ -1,6 +1,15 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/User");
 const { createToken } = require("../utils/jwt");
+const { DEFAULT_SHOPKEEPER_PLAN, getEffectiveSubscription } = require("../utils/subscription");
+
+const buildAuthUserPayload = (user) => ({
+  id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  subscription: getEffectiveSubscription(user)
+});
 
 const register = async (req, res, next) => {
   try {
@@ -23,18 +32,21 @@ const register = async (req, res, next) => {
       name,
       email: email.toLowerCase(),
       passwordHash,
-      role: nextRole
+      role: nextRole,
+      subscription:
+        nextRole === "shopkeeper"
+          ? {
+              plan: DEFAULT_SHOPKEEPER_PLAN,
+              status: "active",
+              startedAt: new Date()
+            }
+          : undefined
     });
 
     const token = createToken(user);
     return res.status(201).json({
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
+      user: buildAuthUserPayload(user)
     });
   } catch (error) {
     return next(error);
@@ -62,12 +74,7 @@ const login = async (req, res, next) => {
     const token = createToken(user);
     return res.json({
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
+      user: buildAuthUserPayload(user)
     });
   } catch (error) {
     return next(error);

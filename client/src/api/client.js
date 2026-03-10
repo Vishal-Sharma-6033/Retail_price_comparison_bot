@@ -58,4 +58,10 @@ export const userApi = {
   removeWatch: (productId) => api.delete(`/users/watchlist/${productId}`)
 };
 
+export const subscriptionApi = {
+  me: () => api.get("/subscriptions/me"),
+  createOrder: (payload) => api.post("/subscriptions/create-order", payload),
+  verify: (payload) => api.post("/subscriptions/verify", payload)
+};
+
 export default api;

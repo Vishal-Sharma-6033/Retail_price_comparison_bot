@@ -1200,6 +1200,89 @@ input[type="radio"]:focus {
   display: inline-block;
 }
 
+.subscription-summary-card {
+  border: 1px solid rgba(11, 114, 133, 0.16);
+}
+
+.subscription-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.subscription-modal {
+  width: min(740px, 100%);
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.subscription-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.subscription-modal-header h2 {
+  margin: 0;
+  font-size: 1.35rem;
+}
+
+.subscription-plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 14px;
+}
+
+.subscription-plan-card {
+  border: 2px solid rgba(15, 23, 42, 0.08);
+  border-radius: 14px;
+  padding: 14px;
+  background: #fff;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.subscription-plan-card.selected {
+  border-color: var(--teal);
+  box-shadow: 0 8px 20px rgba(11, 114, 133, 0.15);
+}
+
+.subscription-plan-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.subscription-plan-name {
+  font-weight: 700;
+}
+
+.subscription-plan-price {
+  color: var(--accent-dark);
+  font-weight: 800;
+}
+
+.subscription-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
 /* Leaflet map overrides */
 .directions-map-container .leaflet-container {
   border-radius: 0;
@@ -1231,5 +1314,14 @@ input[type="radio"]:focus {
 
   .directions-footer {
     padding: 16px;
+  }
+
+  .subscription-modal {
+    padding: 18px;
+  }
+
+  .subscription-modal-footer {
+    flex-direction: column;
+    align-items: stretch;
   }
 }

@@ -2,6 +2,21 @@ const Product = require("../models/Product");
 const Shop = require("../models/Shop");
 const PriceListing = require("../models/PriceListing");
 const User = require("../models/User");
+const {
+  getAvailablePaidPlans,
+  getEffectiveSubscription,
+  getPlanConfig
+} = require("../utils/subscription");
+
+const buildLimitResponse = ({ resource, usage, limits, currentPlan }) => ({
+  code: "SUBSCRIPTION_REQUIRED",
+  message: `Your ${currentPlan.name} plan allows ${limits[resource]} ${resource}. Upgrade to continue.`,
+  resource,
+  usage,
+  limits,
+  currentPlan: currentPlan.code,
+  availablePlans: getAvailablePaidPlans()
+});
 
 const normalizeInput = (value = "") => value.trim().replace(/\s+/g, " ");
 const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -65,6 +80,25 @@ const createProduct = async (req, res, next) => {
 
     if (!name) {
       return res.status(400).json({ message: "Product name is required" });
+    }
+
+    if (req.user.role === "shopkeeper") {
+      const freshUser = await User.findById(req.user._id).select("role subscription");
+      const subscription = getEffectiveSubscription(freshUser || req.user);
+      const currentPlan = getPlanConfig(subscription?.plan);
+      const limits = currentPlan.limits;
+      const currentProductCount = await Product.countDocuments({ owner: req.user._id });
+
+      if (typeof limits.products === "number" && currentProductCount >= limits.products) {
+        return res.status(402).json(
+          buildLimitResponse({
+            resource: "products",
+            usage: { products: currentProductCount },
+            limits,
+            currentPlan
+          })
+        );
+      }
     }
 
     const duplicateQuery = {

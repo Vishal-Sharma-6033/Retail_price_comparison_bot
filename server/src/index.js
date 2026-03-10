@@ -13,6 +13,7 @@ const productRoutes = require("./routes/productRoutes");
 const priceRoutes = require("./routes/priceRoutes");
 const chatbotRoutes = require("./routes/chatbotRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+const subscriptionRoutes = require("./routes/subscriptionRoutes");
 
 require("dotenv").config();
 
@@ -35,6 +36,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/prices", priceRoutes);
 app.use("/api/chatbot", chatbotRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/subscriptions", subscriptionRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

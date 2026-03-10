@@ -1,11 +1,14 @@
 const User = require("../models/User");
 const Product = require("../models/Product");
 const Shop = require("../models/Shop");
+const { getEffectiveSubscription } = require("../utils/subscription");
 
 const LIVE_USERS_WINDOW_MS = 5 * 60 * 1000;
 
 const getMe = async (req, res) => {
-  res.json({ user: req.user });
+  const user = req.user.toObject ? req.user.toObject() : req.user;
+  user.subscription = getEffectiveSubscription(req.user);
+  res.json({ user });
 };
 
 const getWatchlist = async (req, res, next) => {

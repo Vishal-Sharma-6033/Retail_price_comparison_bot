@@ -1,4 +1,20 @@
 const Shop = require("../models/Shop");
+const User = require("../models/User");
+const {
+  getAvailablePaidPlans,
+  getEffectiveSubscription,
+  getPlanConfig
+} = require("../utils/subscription");
+
+const buildLimitResponse = ({ resource, usage, limits, currentPlan }) => ({
+  code: "SUBSCRIPTION_REQUIRED",
+  message: `Your ${currentPlan.name} plan allows ${limits[resource]} ${resource}. Upgrade to continue.`,
+  resource,
+  usage,
+  limits,
+  currentPlan: currentPlan.code,
+  availablePlans: getAvailablePaidPlans()
+});
 
 const getGoogleMapsApiKey = () => {
   return process.env.GOOGLE_MAPS_API_KEY || process.env.GEOCODE_API_KEY || "";
@@ -37,6 +53,25 @@ const createShop = async (req, res, next) => {
 
     if (!name) {
       return res.status(400).json({ message: "Shop name is required" });
+    }
+
+    if (req.user.role === "shopkeeper") {
+      const freshUser = await User.findById(req.user._id).select("role subscription");
+      const subscription = getEffectiveSubscription(freshUser || req.user);
+      const currentPlan = getPlanConfig(subscription?.plan);
+      const limits = currentPlan.limits;
+      const currentShopCount = await Shop.countDocuments({ owner: req.user._id });
+
+      if (typeof limits.shops === "number" && currentShopCount >= limits.shops) {
+        return res.status(402).json(
+          buildLimitResponse({
+            resource: "shops",
+            usage: { shops: currentShopCount },
+            limits,
+            currentPlan
+          })
+        );
+      }
     }
 
     // If coordinates are not provided, try to geocode the address

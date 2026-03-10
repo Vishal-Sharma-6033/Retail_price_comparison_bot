@@ -10,6 +10,23 @@ const userSchema = new mongoose.Schema(
       enum: ["customer", "shopkeeper", "admin"],
       default: "customer"
     },
+    subscription: {
+      plan: {
+        type: String,
+        enum: ["free", "basic", "premium"],
+        default: undefined
+      },
+      status: {
+        type: String,
+        enum: ["active", "expired", "cancelled"],
+        default: "active"
+      },
+      razorpayCustomerId: { type: String, trim: true },
+      lastOrderId: { type: String, trim: true },
+      lastPaymentId: { type: String, trim: true },
+      startedAt: { type: Date },
+      expiresAt: { type: Date }
+    },
     watchlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
     recentSearches: [
       {

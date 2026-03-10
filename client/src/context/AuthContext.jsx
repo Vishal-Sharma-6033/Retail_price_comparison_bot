@@ -27,6 +27,17 @@ export const AuthProvider = ({ children }) => {
       .finally(() => setLoading(false));
   }, [token]);
 
+  const refreshUser = async () => {
+    if (!token) {
+      setUser(null);
+      return null;
+    }
+
+    const response = await authApi.me();
+    setUser(response.data.user);
+    return response.data.user;
+  };
+
   const login = (nextToken, nextUser) => {
     localStorage.setItem("rpcb_token", nextToken);
     setToken(nextToken);
@@ -39,8 +50,12 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  const updateUser = (nextUser) => {
+    setUser(nextUser);
+  };
+
   const value = useMemo(
-    () => ({ token, user, loading, login, logout }),
+    () => ({ token, user, loading, login, logout, refreshUser, updateUser }),
     [token, user, loading]
   );
 
