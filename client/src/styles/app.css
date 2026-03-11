@@ -1200,6 +1200,14 @@ input[type="radio"]:focus {
   display: inline-block;
 }
 
+.shop-search-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
 .subscription-summary-card {
   border: 1px solid rgba(11, 114, 133, 0.16);
 }

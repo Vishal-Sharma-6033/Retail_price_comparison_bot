@@ -5,6 +5,7 @@ const {
   createShop,
   getNearbyShops,
   getMyShops,
+  searchShopsWithProducts,
   geocodeAddress,
   updateShopLocation,
   deleteShop
@@ -13,6 +14,7 @@ const {
 const router = express.Router();
 
 router.get("/nearby", getNearbyShops);
+router.get("/search", searchShopsWithProducts);
 router.get("/geocode", geocodeAddress);
 router.get("/mine", authenticate, requireRole("shopkeeper", "admin"), getMyShops);
 router.post("/", authenticate, requireRole("shopkeeper", "admin"), createShop);

@@ -1,10 +1,13 @@
 const Shop = require("../models/Shop");
 const User = require("../models/User");
+const PriceListing = require("../models/PriceListing");
 const {
   getAvailablePaidPlans,
   getEffectiveSubscription,
   getPlanConfig
 } = require("../utils/subscription");
+
+const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const buildLimitResponse = ({ resource, usage, limits, currentPlan }) => ({
   code: "SUBSCRIPTION_REQUIRED",
@@ -133,6 +136,63 @@ const getMyShops = async (req, res, next) => {
   }
 };
 
+const searchShopsWithProducts = async (req, res, next) => {
+  try {
+    const { name } = req.query;
+
+    if (!name || !name.trim()) {
+      return res.status(400).json({ message: "Shop name is required" });
+    }
+
+    const shops = await Shop.find({
+      name: { $regex: escapeRegex(name.trim()), $options: "i" }
+    })
+      .sort({ name: 1 })
+      .limit(20);
+
+    if (!shops.length) {
+      return res.json({ shops: [] });
+    }
+
+    const shopIds = shops.map((shop) => shop._id);
+    const listings = await PriceListing.find({ shop: { $in: shopIds } })
+      .populate("product", "name brand category")
+      .sort({ updatedAt: -1 });
+
+    const listingsByShop = new Map();
+    listings.forEach((listing) => {
+      const key = listing.shop.toString();
+      if (!listingsByShop.has(key)) {
+        listingsByShop.set(key, []);
+      }
+
+      listingsByShop.get(key).push({
+        listingId: listing._id,
+        productId: listing.product?._id,
+        productName: listing.product?.name || "Unknown product",
+        brand: listing.product?.brand || "",
+        category: listing.product?.category || "",
+        price: listing.price,
+        currency: listing.currency || "INR",
+        inStock: listing.inStock,
+        lastUpdated: listing.lastUpdated || listing.updatedAt
+      });
+    });
+
+    const result = shops.map((shop) => ({
+      id: shop._id,
+      name: shop.name,
+      address: shop.address,
+      phone: shop.phone,
+      products: listingsByShop.get(shop._id.toString()) || []
+    }));
+
+    return res.json({ shops: result });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 const geocodeAddress = async (req, res, next) => {
   try {
     const { address } = req.query;
@@ -230,4 +290,12 @@ const updateShopLocation = async (req, res, next) => {
   }
 };
 
-module.exports = { createShop, getNearbyShops, getMyShops, geocodeAddress, updateShopLocation, deleteShop };
+module.exports = {
+  createShop,
+  getNearbyShops,
+  getMyShops,
+  searchShopsWithProducts,
+  geocodeAddress,
+  updateShopLocation,
+  deleteShop
+};
