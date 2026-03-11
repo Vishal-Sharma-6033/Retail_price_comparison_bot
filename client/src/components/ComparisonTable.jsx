@@ -1,4 +1,5 @@
 import { useState } from "react";
+import mapLogo from "../../images/map.png";
 
 const hasValidCoordinates = (shop) => {
   const coordinates = shop?.location?.coordinates;
@@ -128,10 +129,7 @@ const ComparisonTable = ({ results, onAddToWatchlist, watchlistIds = [], onGetDi
                               aria-label="Show route"
                               title="Show Route"
                             >
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="22" y1="2" x2="11" y2="13" />
-                                <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                              </svg>
+                              <img className="comparison-route-logo" src={mapLogo} alt="Show route" />
                             </button>
                           ) : (
                             <span className="muted">-</span>

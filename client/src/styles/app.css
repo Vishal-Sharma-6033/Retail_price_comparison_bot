@@ -853,6 +853,12 @@ input[type="radio"]:focus {
   cursor: default;
 }
 
+.comparison-route-logo {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
 .comparison-toggle-row td {
   text-align: center;
   padding-top: 10px;
