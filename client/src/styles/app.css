@@ -2090,6 +2090,31 @@ input[type="radio"]:focus {
   padding: 8px 0;
 }
 
+.profile-activity-delete-btn {
+  margin-left: auto;
+  width: 30px;
+  height: 30px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #8a95a3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.profile-activity-delete-btn:hover:not(:disabled) {
+  color: #b91c1c;
+  background: rgba(185, 28, 28, 0.08);
+}
+
+.profile-activity-delete-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 .profile-activity-icon {
   width: 26px;
   height: 26px;

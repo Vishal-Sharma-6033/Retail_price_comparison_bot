@@ -144,6 +144,22 @@ const Profile = () => {
     }
   };
 
+  const handleDeleteActivity = async (activityId) => {
+    if (!activityId) {
+      return;
+    }
+
+    try {
+      await userApi.deleteRecentActivity(activityId);
+      setInsights((prev) => ({
+        ...prev,
+        recentActivity: prev.recentActivity.filter((item) => item._id !== activityId)
+      }));
+    } catch (error) {
+      console.error("Failed to delete activity:", error);
+    }
+  };
+
   return (
     <section className="page profile-page">
       <div className="profile-hero-card">
@@ -260,6 +276,22 @@ const Profile = () => {
                       {formatSearchTime(item.searchedAt)}
                     </div>
                   </div>
+                  <button
+                    type="button"
+                    className="profile-activity-delete-btn"
+                    onClick={() => handleDeleteActivity(item._id)}
+                    aria-label="Delete activity"
+                    title="Delete"
+                    disabled={!item._id}
+                  >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                      <path d="M10 11v6" />
+                      <path d="M14 11v6" />
+                      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                    </svg>
+                  </button>
                 </div>
               ))}
             </div>
