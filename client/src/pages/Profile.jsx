@@ -219,7 +219,7 @@ const Profile = () => {
                       )}
                     </div>
                     <button
-                      className="ghost-btn"
+                      className="watchlist-remove-btn"
                       type="button"
                       onClick={() => handleRemove(product._id)}
                     >

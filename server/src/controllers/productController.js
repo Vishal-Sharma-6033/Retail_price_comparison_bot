@@ -233,7 +233,8 @@ const searchProducts = async (req, res, next) => {
         shop: listing.shop,
         price: listing.price,
         currency: listing.currency,
-        distanceKm
+        distanceKm,
+        inStock: listing.inStock !== false
       });
     });
 
@@ -257,7 +258,8 @@ const searchProducts = async (req, res, next) => {
           shop: entry.shop,
           price: entry.price,
           currency: entry.currency,
-          distanceKm: entry.distanceKm === null ? null : Number(entry.distanceKm.toFixed(2))
+          distanceKm: entry.distanceKm === null ? null : Number(entry.distanceKm.toFixed(2)),
+          inStock: entry.inStock !== false
         }));
 
         const nearest = nearestShops[0];
