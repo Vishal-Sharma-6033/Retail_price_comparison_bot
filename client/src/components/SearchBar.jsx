@@ -1,4 +1,5 @@
 import { useState } from "react";
+import mapLogo from "../../images/map.png";
 
 const SearchBar = ({ onSearch, onUseLocation, locationStatus }) => {
   const [query, setQuery] = useState("");
@@ -30,8 +31,9 @@ const SearchBar = ({ onSearch, onUseLocation, locationStatus }) => {
           value={address}
           onChange={(event) => setAddress(event.target.value)}
         />
-        <button className="ghost-btn" type="button" onClick={onUseLocation}>
-          📍 Use my location
+        <button className="ghost-btn location-btn" type="button" onClick={onUseLocation}>
+          <img className="location-logo" src={mapLogo} alt="Location" />
+          Use my location
         </button>
       </div>
       {locationStatus && (
