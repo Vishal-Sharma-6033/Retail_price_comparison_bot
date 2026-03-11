@@ -77,6 +77,32 @@ const Profile = () => {
     });
   };
 
+  const formatPrice = (price, currency = "INR") => {
+    if (typeof price !== "number") {
+      return "-";
+    }
+
+    return new Intl.NumberFormat("en-IN", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: 0
+    }).format(price);
+  };
+
+  const initials = (user?.name || "U")
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  const memberSince = insights.stats?.memberSince
+    ? new Date(insights.stats.memberSince).toLocaleDateString([], {
+      month: "long",
+      year: "numeric"
+    })
+    : "-";
+
   const statTiles = [
     {
       label: "Total Searches",
@@ -118,147 +144,122 @@ const Profile = () => {
     }
   };
 
-  const handleDeleteActivity = async (activityId) => {
-    if (!activityId) {
-      return;
-    }
-
-    try {
-      await userApi.deleteRecentActivity(activityId);
-      setInsights((prev) => ({
-        ...prev,
-        recentActivity: prev.recentActivity.filter((item) => item._id !== activityId)
-      }));
-    } catch (error) {
-      console.error("Failed to delete activity:", error);
-    }
-  };
-
   return (
-    <section className="page">
-      <div className="hero compact">
-        <div>
-          <h1>My Profile</h1>
-          <p>Manage your account and track price changes on your watchlist.</p>
+    <section className="page profile-page">
+      <div className="profile-hero-card">
+        <div className="profile-hero-strip" />
+        <div className="profile-hero-content">
+          <div className="profile-avatar">{initials}</div>
+          <div className="profile-user-meta">
+            <h1>{user?.name || "User"}</h1>
+            <div className="profile-email-row">
+              <span>{user?.email}</span>
+              <span className="role-chip">{user?.role || "consumer"}</span>
+            </div>
+            <p className="muted">Member since {memberSince}</p>
+          </div>
         </div>
       </div>
 
-      <div className="grid">
-        <div className="card">
-          <div className="card-title">Account Info</div>
-          <div className="profile-info">
-            <div className="info-row">
-              <span className="info-label">Name:</span>
-              <span>{user?.name}</span>
+      <div className="profile-stats-strip">
+        {statTiles.map((tile) => (
+          <div key={tile.label} className="profile-stat-tile">
+            <div>
+              <div className="profile-stat-label">{tile.label}</div>
+              <div className="profile-stat-value">{insightsLoading ? "--" : tile.value}</div>
             </div>
-            <div className="info-row">
-              <span className="info-label">Email:</span>
-              <span>{user?.email}</span>
-            </div>
-            <div className="info-row">
-              <span className="info-label">Role:</span>
-              <span className="role-chip">{user?.role}</span>
+            <div className="profile-stat-icon" aria-hidden="true">
+              {tile.label === "Total Searches" ? "⌕" : tile.label === "Live Users" ? "◌" : tile.label === "Platform Users" ? "◉" : tile.label === "Products Tracked" ? "◈" : tile.label === "Shops Onboarded" ? "▣" : "♡"}
             </div>
           </div>
-        </div>
+        ))}
+      </div>
 
-        <div className="card">
-          <div className="card-title">User Stats</div>
-          {insightsLoading ? (
-            <p className="muted">Loading usage stats...</p>
-          ) : (
-            <>
-              <div className="profile-stats-grid">
-                {statTiles.map((tile) => (
-                  <div key={tile.label} className="profile-stat-item">
-                    <span className="profile-stat-label">{tile.label}</span>
-                    <span className="profile-stat-value">{tile.value}</span>
-                  </div>
-                ))}
-              </div>
-              {insights.stats?.memberSince ? (
-                <p className="muted profile-member-since">
-                  Member since {new Date(insights.stats.memberSince).toLocaleDateString()}
-                </p>
-              ) : null}
-            </>
-          )}
-        </div>
+      <div className="profile-main-grid">
+        <div className="card profile-watchlist-card">
+          <div className="profile-card-head">
+            <h2>Watchlist</h2>
+            <span className="profile-count-pill">{watchlist.length}</span>
+          </div>
 
-        <div className="card">
-          <div className="card-title">Watchlist ({watchlist.length})</div>
           {loading ? (
             <p className="muted">Loading watchlist...</p>
           ) : watchlist.length === 0 ? (
-            <p className="muted">
-              Your watchlist is empty. Add products from the home page to track price drops.
-            </p>
+            <p className="muted">Your watchlist is empty. Add products from home to track prices.</p>
           ) : (
-            <div className="watchlist-items">
-              {watchlist.map((product) => {
-                const priceInfo = priceData[product._id];
-                return (
-                  <div key={product._id} className="watchlist-item">
-                    <div className="watchlist-product">
-                      <div className="product-name">{product.name}</div>
-                      <div className="product-meta">
-                        {product.brand && <span>{product.brand}</span>}
-                        {product.category && <span className="muted"> • {product.category}</span>}
-                      </div>
-                    </div>
-                    <div className="watchlist-price">
-                      {priceInfo ? (
-                        <>
-                          <span className="price-amount">
-                            {priceInfo.price} {priceInfo.currency}
-                          </span>
-                          <span className="price-shop muted">at {priceInfo.shop?.name}</span>
-                        </>
-                      ) : (
-                        <span className="muted">No prices available</span>
-                      )}
-                    </div>
-                    <button
-                      className="watchlist-remove-btn"
-                      type="button"
-                      onClick={() => handleRemove(product._id)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                );
-              })}
+            <div className="watchlist-table-wrap">
+              <table className="watchlist-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Best Price</th>
+                    <th>Shop</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {watchlist.map((product) => {
+                    const priceInfo = priceData[product._id];
+                    return (
+                      <tr key={product._id}>
+                        <td>
+                          <div className="product-name">{product.name}</div>
+                          <div className="product-meta">
+                            {product.brand || "-"}
+                            {product.category ? ` · ${product.category}` : ""}
+                          </div>
+                        </td>
+                        <td className="watchlist-best-price">
+                          {priceInfo ? formatPrice(priceInfo.price, priceInfo.currency) : "-"}
+                        </td>
+                        <td className="muted">{priceInfo?.shop?.name || "No shop"}</td>
+                        <td>
+                          <button
+                            className="watchlist-trash-btn"
+                            type="button"
+                            onClick={() => handleRemove(product._id)}
+                            aria-label="Remove from watchlist"
+                            title="Remove"
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <polyline points="3 6 5 6 21 6" />
+                              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                              <path d="M10 11v6" />
+                              <path d="M14 11v6" />
+                              <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                            </svg>
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
 
-        <div className="card">
-          <div className="card-title">Recent Activity</div>
+        <div className="card profile-activity-card">
+          <div className="profile-card-head">
+            <h2>Recent Activity</h2>
+          </div>
+
           {insightsLoading ? (
             <p className="muted">Loading recent searches...</p>
           ) : insights.recentActivity.length === 0 ? (
-            <p className="muted">No searches yet. Start searching products to build your activity history.</p>
+            <p className="muted">No searches yet. Your recent searches will appear here.</p>
           ) : (
-            <div className="activity-list">
+            <div className="profile-activity-list">
               {insights.recentActivity.map((item, index) => (
-                <div
-                  key={item._id || `${item.query}-${item.searchedAt || index}`}
-                  className="activity-item"
-                >
+                <div key={item._id || `${item.query}-${item.searchedAt || index}`} className="profile-activity-item">
+                  <div className="profile-activity-icon">⌕</div>
                   <div className="activity-main">
                     <div className="activity-query">{item.query}</div>
                     <div className="activity-meta muted">
-                      {item.address ? `Near ${item.address} • ` : ""}
+                      {item.address ? `Near ${item.address} · ` : ""}
                       {formatSearchTime(item.searchedAt)}
                     </div>
                   </div>
-                  <button
-                    type="button"
-                    className="ghost-btn activity-delete-btn"
-                    onClick={() => handleDeleteActivity(item._id)}
-                  >
-                    Delete
-                  </button>
                 </div>
               ))}
             </div>
