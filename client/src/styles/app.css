@@ -669,6 +669,27 @@ input[type="radio"]:focus {
   display: flex;
   gap: 8px;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.comparison-toggle-row td {
+  text-align: center;
+  padding-top: 8px;
+  padding-bottom: 14px;
+}
+
+.comparison-show-more-btn {
+  border: 1px solid rgba(11, 114, 133, 0.28);
+  background: rgba(11, 114, 133, 0.08);
+  color: var(--teal);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.comparison-show-more-btn:hover {
+  background: rgba(11, 114, 133, 0.14);
 }
 
 .ghost-btn.watched {

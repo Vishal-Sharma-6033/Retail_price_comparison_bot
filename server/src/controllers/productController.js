@@ -18,6 +18,30 @@ const buildLimitResponse = ({ resource, usage, limits, currentPlan }) => ({
   availablePlans: getAvailablePaidPlans()
 });
 
+const hasValidCoordinates = (shop) => {
+  const coordinates = shop?.location?.coordinates;
+  return (
+    Array.isArray(coordinates) &&
+    coordinates.length === 2 &&
+    Number.isFinite(coordinates[0]) &&
+    Number.isFinite(coordinates[1]) &&
+    !(coordinates[0] === 0 && coordinates[1] === 0)
+  );
+};
+
+const toRadians = (value) => (value * Math.PI) / 180;
+
+const distanceInKm = (originLat, originLng, targetLat, targetLng) => {
+  const earthRadiusKm = 6371;
+  const dLat = toRadians(targetLat - originLat);
+  const dLng = toRadians(targetLng - originLng);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(originLat)) * Math.cos(toRadians(targetLat)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return earthRadiusKm * c;
+};
+
 const normalizeInput = (value = "") => value.trim().replace(/\s+/g, " ");
 const escapeRegex = (value = "") => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const buildLooseExactRegex = (value = "") => {
@@ -188,21 +212,67 @@ const searchProducts = async (req, res, next) => {
       .populate("product")
       .populate("shop");
 
-    const resultsMap = new Map();
+    const inputLat = Number(lat);
+    const inputLng = Number(lng);
+    const hasUserCoordinates = Number.isFinite(inputLat) && Number.isFinite(inputLng);
+
+    const listingsByProduct = new Map();
     listings.forEach((listing) => {
       const productId = listing.product._id.toString();
-      const current = resultsMap.get(productId);
-      if (!current || listing.price < current.bestPrice) {
-        resultsMap.set(productId, {
-          product: listing.product,
-          bestPrice: listing.price,
-          currency: listing.currency,
-          shop: listing.shop
-        });
+      if (!listingsByProduct.has(productId)) {
+        listingsByProduct.set(productId, []);
       }
+
+      let distanceKm = null;
+      if (hasUserCoordinates && hasValidCoordinates(listing.shop)) {
+        const [shopLng, shopLat] = listing.shop.location.coordinates;
+        distanceKm = distanceInKm(inputLat, inputLng, shopLat, shopLng);
+      }
+
+      listingsByProduct.get(productId).push({
+        shop: listing.shop,
+        price: listing.price,
+        currency: listing.currency,
+        distanceKm
+      });
     });
 
-    return res.json({ results: Array.from(resultsMap.values()) });
+    const results = products
+      .map((product) => {
+        const productListings = listingsByProduct.get(product._id.toString()) || [];
+        if (productListings.length === 0) {
+          return null;
+        }
+
+        productListings.sort((a, b) => {
+          if (a.distanceKm === null && b.distanceKm !== null) return 1;
+          if (a.distanceKm !== null && b.distanceKm === null) return -1;
+          if (a.distanceKm !== null && b.distanceKm !== null && a.distanceKm !== b.distanceKm) {
+            return a.distanceKm - b.distanceKm;
+          }
+          return a.price - b.price;
+        });
+
+        const nearestShops = productListings.slice(0, 3).map((entry) => ({
+          shop: entry.shop,
+          price: entry.price,
+          currency: entry.currency,
+          distanceKm: entry.distanceKm === null ? null : Number(entry.distanceKm.toFixed(2))
+        }));
+
+        const nearest = nearestShops[0];
+
+        return {
+          product,
+          bestPrice: nearest.price,
+          currency: nearest.currency,
+          shop: nearest.shop,
+          shops: nearestShops
+        };
+      })
+      .filter(Boolean);
+
+    return res.json({ results });
   } catch (error) {
     return next(error);
   }
