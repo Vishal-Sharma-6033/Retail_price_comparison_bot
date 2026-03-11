@@ -244,40 +244,120 @@ const Dashboard = () => {
     }
   };
 
+  const planName = (subscription?.plan || "free").replace(/^\w/, (c) => c.toUpperCase());
+  const shopLimit = subscription?.limits?.shops ?? "∞";
+  const productLimit = subscription?.limits?.products ?? "∞";
+
   return (
     <section className="page">
-      <div className="hero compact">
-        <div>
-          <h1>Shopkeeper Dashboard</h1>
-          <p>Manage shops, products, and price listings in one place.</p>
+      <div className="sk-dashboard-header">
+        <div className="sk-dashboard-title-row">
+          <div className="sk-dashboard-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect width="7" height="7" x="3" y="3" rx="1"/>
+              <rect width="7" height="7" x="14" y="3" rx="1"/>
+              <rect width="7" height="7" x="14" y="14" rx="1"/>
+              <rect width="7" height="7" x="3" y="14" rx="1"/>
+            </svg>
+          </div>
+          <div>
+            <h1 className="sk-dashboard-title">Shopkeeper Dashboard</h1>
+            <p className="sk-dashboard-subtitle">Manage shops, products, and price listings in one place.</p>
+          </div>
         </div>
+
+        <div className="sk-stats-grid">
+          <div className="sk-stat-card">
+            <div>
+              <div className="sk-stat-label">SHOPS</div>
+              <div className="sk-stat-value">{shops.length}</div>
+              <div className="sk-stat-sub">of {shopLimit}</div>
+            </div>
+            <div className="sk-stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                <path d="M15 22v-4a3 3 0 0 0-6 0v4"/>
+                <path d="M2 7h20"/>
+              </svg>
+            </div>
+          </div>
+
+          <div className="sk-stat-card">
+            <div>
+              <div className="sk-stat-label">PRODUCTS</div>
+              <div className="sk-stat-value">{products.length}</div>
+              <div className="sk-stat-sub">of {productLimit}</div>
+            </div>
+            <div className="sk-stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.29 7 12 12 20.71 7"/>
+                <line x1="12" x2="12" y1="22" y2="12"/>
+              </svg>
+            </div>
+          </div>
+
+          <div className="sk-stat-card">
+            <div>
+              <div className="sk-stat-label">PLAN</div>
+              <div className="sk-stat-value">{planName}</div>
+            </div>
+            <div className="sk-stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
+              </svg>
+            </div>
+          </div>
+
+          <div className="sk-stat-card">
+            <div>
+              <div className="sk-stat-label">PRICES LISTED</div>
+              <div className="sk-stat-value">—</div>
+              <div className="sk-stat-sub">Update below</div>
+            </div>
+            <div className="sk-stat-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect width="20" height="14" x="2" y="5" rx="2"/>
+                <line x1="2" x2="22" y1="10" y2="10"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        {user?.role === "shopkeeper" && (
+          <div className="sk-plan-banner">
+            <div className="sk-plan-banner-left">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
+              </svg>
+              <div>
+                <div className="sk-plan-banner-name">{planName} Plan</div>
+                <div className="sk-plan-banner-sub">{shops.length} shops · {products.length} products</div>
+              </div>
+            </div>
+            <button
+              className="sk-upgrade-btn"
+              type="button"
+              onClick={() =>
+                setModalState({
+                  open: true,
+                  resource: "shops/products",
+                  currentPlan: subscription?.plan || "free",
+                  availablePlans: plans
+                })
+              }
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
+              </svg>
+              Upgrade Plan
+            </button>
+          </div>
+        )}
       </div>
+
       {message ? <p className="notice">{message}</p> : null}
-      {user?.role === "shopkeeper" ? (
-        <div className="card subscription-summary-card">
-          <div className="card-title">Your Plan</div>
-          <p>
-            Current: <strong>{subscription?.plan || "free"}</strong>
-          </p>
-          <p className="muted">
-            Limits: {formatPlanLimit(subscription?.limits?.shops, "shops")}, {formatPlanLimit(subscription?.limits?.products, "products")}
-          </p>
-          <button
-            className="ghost-btn"
-            type="button"
-            onClick={() =>
-              setModalState({
-                open: true,
-                resource: "shops/products",
-                currentPlan: subscription?.plan || "free",
-                availablePlans: plans
-              })
-            }
-          >
-            Upgrade Plan
-          </button>
-        </div>
-      ) : null}
       <div className="grid">
         <div className="card">
           <div className="card-title">Create Shop</div>
