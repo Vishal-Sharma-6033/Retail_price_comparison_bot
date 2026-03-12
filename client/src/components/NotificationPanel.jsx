@@ -23,7 +23,7 @@ const NotificationPanel = () => {
 
   useEffect(() => {
     loadNotifications();
-    const interval = setInterval(loadNotifications, 60000); // Refresh every 30 seconds
+    const interval = setInterval(loadNotifications, 1800000); // Refresh every 30 minutes
     return () => clearInterval(interval);
   }, []);
 
