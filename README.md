@@ -186,7 +186,8 @@ This starts:
 
 This project is backed by a research paper explaining the methodology, architecture, and results.
 
-📥 [Read Full Paper (PDF)](link-to-your-paper.pdf)
+📥 [Read Full Paper (PDF)]
+https://drive.google.com/file/d/104nL1chxU2Ew50a1WS-VgkVz714RJRrn/view?usp=drivesdk
 
 ## Author
 
