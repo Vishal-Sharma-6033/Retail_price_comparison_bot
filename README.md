@@ -182,6 +182,12 @@ This starts:
 - Geolocation + maps + analytics + chatbot + realtime updates
 - Payment integration for monetization
 
+## 📄 Research Paper
+
+This project is backed by a research paper explaining the methodology, architecture, and results.
+
+📥 [Read Full Paper (PDF)](link-to-your-paper.pdf)
+
 ## Author
 
 Vishal Sharma
