@@ -126,6 +126,7 @@ PORT=5000
 
 # optional integrations
 GEOCODE_API_KEY=your_maps_key
+GEMINI_API_KEY=your_gemini_api_key
 RAZORPAY_KEY_ID=your_key_id
 RAZORPAY_KEY_SECRET=your_key_secret
 ```
