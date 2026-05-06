@@ -1,5 +1,7 @@
 # Retail Price Comparison Bot
 
+Live preview: https://retail-price-comparison-bot-client.vercel.app
+
 A full-stack MERN application that helps users find the best prices for products across local shops.
 
 Users can search products, compare prices, check price trends, get shop directions, and track watchlist updates. Shopkeepers can manage shops, products, and pricing from a protected dashboard with subscription support.
